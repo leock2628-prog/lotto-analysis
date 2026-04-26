@@ -1,0 +1,16 @@
+{
+  "name": "lotto-scraper",
+  "version": "1.0.0",
+  "description": "台灣大樂透開獎資料爬蟲",
+  "main": "scrape.js",
+  "scripts": {
+    "scrape": "node scrape.js",
+    "test": "node scrape.js"
+  },
+  "dependencies": {
+    "playwright": "^1.44.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
