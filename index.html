@@ -1,0 +1,2450 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 大樂透進階統計分析系統</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1a2035;
+    --card: #141d2e;
+    --border: #1e2d45;
+    --accent: #3b82f6;
+    --accent2: #8b5cf6;
+    --accent3: #06b6d4;
+    --gold: #f59e0b;
+    --red: #ef4444;
+    --green: #10b981;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --hot: #f97316;
+    --cold: #60a5fa;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0a0e1a 0%, #1a1040 50%, #0a1a2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    flex-wrap: wrap;
+  }
+  .header-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .header-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .header h1 {
+    font-size: 16px;
+    font-weight: 700;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    white-space: nowrap;
+  }
+  .header-subtitle {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 1px;
+    white-space: nowrap;
+  }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .update-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+  }
+  .hdr-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 11px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans TC', sans-serif;
+    white-space: nowrap;
+    border: 1px solid;
+  }
+  .hdr-btn-blue {
+    background: rgba(59,130,246,0.15);
+    border-color: rgba(59,130,246,0.4);
+    color: #60a5fa;
+  }
+  .hdr-btn-blue:hover { background: rgba(59,130,246,0.25); }
+  .hdr-btn-gold {
+    background: rgba(245,158,11,0.12);
+    border-color: rgba(245,158,11,0.35);
+    color: #f59e0b;
+  }
+  .hdr-btn-gold:hover { background: rgba(245,158,11,0.22); }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  @media (max-width: 480px) {
+    .header h1 { font-size: 14px; }
+    .header-subtitle { display: none; }
+    .update-status span { display: none; }
+    .hdr-btn span.btn-label { display: none; }
+    .hdr-btn { padding: 6px 9px; }
+  }
+
+  /* Layout */
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), transparent);
+    opacity: 0.6;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    font-size: 12px;
+  }
+
+  /* Latest Draw */
+  .latest-draw {
+    background: linear-gradient(135deg, #0d1b3e 0%, #1a0d2e 100%);
+    border-color: #2a3a5e;
+  }
+  .draw-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .draw-period { font-size: 15px; font-weight: 600; color: var(--accent); }
+  .draw-date { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .draw-prize { text-align: right; }
+  .prize-amount { font-size: 22px; font-weight: 700; color: var(--gold); font-family: 'JetBrains Mono', monospace; }
+  .prize-label { font-size: 11px; color: var(--text3); }
+  .balls-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .ball {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    position: relative;
+    transition: transform 0.2s;
+    cursor: default;
+    flex-shrink: 0;
+  }
+  .ball:hover { transform: scale(1.1); }
+  .ball-normal {
+    background: linear-gradient(135deg, #1e3a6e, #2563eb);
+    color: white;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+    border: 1px solid rgba(96,165,250,0.3);
+  }
+  .ball-special {
+    background: linear-gradient(135deg, #7c1d2e, #dc2626);
+    color: white;
+    box-shadow: 0 4px 12px rgba(220,38,38,0.4);
+    border: 1px solid rgba(252,165,165,0.3);
+  }
+  .ball-plus {
+    font-size: 24px;
+    color: var(--text3);
+    width: auto;
+    height: auto;
+  }
+
+  /* Stats Grid */
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .stat-label { font-size: 11px; color: var(--text3); }
+  .stat-change { font-size: 12px; margin-top: 4px; }
+  .positive { color: var(--green); }
+  .negative { color: var(--red); }
+
+  /* Number Frequency */
+  .freq-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+  }
+  .freq-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .freq-item:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .freq-num {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 4px;
+  }
+  .freq-count { font-size: 10px; color: var(--text3); }
+  .freq-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    border-radius: 0 0 8px 8px;
+    height: 3px;
+    transition: width 0.3s;
+  }
+  .hot-num { border-color: rgba(249,115,22,0.5); background: rgba(249,115,22,0.08); }
+  .hot-num .freq-num { color: var(--hot); }
+  .hot-num .freq-bar { background: var(--hot); }
+  .cold-num { border-color: rgba(96,165,250,0.3); background: rgba(96,165,250,0.05); }
+  .cold-num .freq-num { color: var(--cold); }
+  .cold-num .freq-bar { background: var(--cold); }
+
+  /* Missing Values */
+  .missing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 6px;
+  }
+  .missing-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 6px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .missing-item:hover { border-color: var(--accent2); }
+  .missing-num { font-size: 15px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .missing-val { font-size: 10px; color: var(--text3); margin-top: 2px; }
+  .high-missing { border-color: rgba(139,92,246,0.4); background: rgba(139,92,246,0.08); }
+  .high-missing .missing-num { color: var(--accent2); }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg3);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    flex: 1;
+    min-width: 80px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    color: var(--text3);
+    border: none;
+    background: transparent;
+  }
+  .tab.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+  }
+  .tab:hover:not(.active) { color: var(--text); background: var(--border); }
+
+  /* Bar Chart */
+  .bar-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; }
+  .bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    gap: 4px;
+  }
+  .bar {
+    width: 100%;
+    border-radius: 3px 3px 0 0;
+    transition: height 0.4s ease;
+    min-height: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  .bar:hover { opacity: 0.8; }
+  .bar-label { font-size: 9px; color: var(--text3); text-align: center; font-family: 'JetBrains Mono', monospace; }
+  .bar-val { font-size: 9px; color: var(--text2); }
+
+  /* Odd/Even Chart */
+  .ratio-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .ratio-bar-wrap {
+    flex: 1;
+    height: 20px;
+    background: var(--bg3);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+  }
+  .ratio-bar-odd {
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    height: 100%;
+    transition: width 0.5s;
+    border-radius: 10px 0 0 10px;
+  }
+  .ratio-bar-even {
+    background: linear-gradient(90deg, var(--gold), var(--hot));
+    height: 100%;
+    flex: 1;
+    border-radius: 0 10px 10px 0;
+  }
+  .ratio-label { font-size: 13px; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+  /* Analysis Table */
+  .analysis-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .analysis-table th {
+    background: var(--bg3);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+  }
+  .analysis-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+    color: var(--text2);
+  }
+  .analysis-table tr:hover td { background: var(--bg3); color: var(--text); }
+  .analysis-table .num-col {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  /* Recommendation */
+  .recommend-section { margin-top: 20px; }
+  .recommend-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .recommend-set {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .set-label { font-size: 11px; color: var(--text3); min-width: 40px; }
+  .rec-balls { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rec-ball {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    background: linear-gradient(135deg, #1e3a6e, #2563eb);
+    color: white;
+    box-shadow: 0 3px 8px rgba(37,99,235,0.3);
+  }
+  .rec-ball.special {
+    background: linear-gradient(135deg, #7c1d2e, #dc2626);
+    box-shadow: 0 3px 8px rgba(220,38,38,0.3);
+  }
+  .set-info { margin-left: auto; font-size: 11px; color: var(--text3); text-align: right; }
+
+  /* Loading */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    gap: 12px;
+    color: var(--text2);
+    font-size: 14px;
+  }
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeInUp {
+    from { opacity:0; transform:translateX(-50%) translateY(12px); }
+    to   { opacity:1; transform:translateX(-50%) translateY(0); }
+  }
+
+  /* Pagination */
+  .history-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; }
+  .history-list::-webkit-scrollbar { width: 4px; }
+  .history-list::-webkit-scrollbar-track { background: var(--bg3); }
+  .history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .history-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    transition: border-color 0.2s;
+  }
+  .history-item:hover { border-color: var(--accent); }
+  .history-period { font-size: 12px; color: var(--text2); min-width: 100px; }
+  .history-date { font-size: 11px; color: var(--text3); }
+  .history-balls { display: flex; gap: 6px; flex-wrap: wrap; }
+  .small-ball {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .small-ball-n { background: #1e3a6e; color: #93c5fd; }
+  .small-ball-s { background: #7c1d2e; color: #fca5a5; }
+
+  /* Sum Range */
+  .range-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+  }
+  .range-label { font-size: 12px; color: var(--text2); width: 80px; }
+  .range-bar-wrap { flex: 1; background: var(--bg3); height: 8px; border-radius: 4px; overflow: hidden; }
+  .range-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s; }
+  .range-val { font-size: 12px; color: var(--text3); width: 40px; text-align: right; font-family: 'JetBrains Mono', monospace; }
+
+  /* Head Digits */
+  .head-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .head-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+  }
+  .head-digit { font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--accent3); }
+  .head-count { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .head-pct { font-size: 13px; color: var(--text2); margin-top: 2px; font-weight: 500; }
+
+  /* Tail Digits */
+  .tail-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .tail-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+  }
+  .tail-digit { font-size: 18px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .tail-bar { height: 4px; border-radius: 2px; margin: 6px 0; background: var(--accent); }
+
+  /* Section title */
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-badge {
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+
+  /* Alert */
+  .alert {
+    background: rgba(249,115,22,0.1);
+    border: 1px solid rgba(249,115,22,0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #fdba74;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    font-family: 'Noto Sans TC', sans-serif;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: #2563eb; }
+  .btn-secondary {
+    background: var(--bg3);
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-gold { background: var(--gold); color: #1a0d00; }
+  .btn-gold:hover { background: #d97706; }
+
+  .gap-12 { margin-bottom: 12px; }
+  .gap-20 { margin-bottom: 20px; }
+  .gap-24 { margin-bottom: 24px; }
+  .gap-32 { margin-bottom: 32px; }
+
+  .flex-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  /* Trend legend */
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text3);
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Streak */
+  .streak-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+    gap: 12px;
+  }
+  .streak-num {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e3a6e, #2563eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+  }
+  .streak-info { flex: 1; }
+  .streak-label { font-size: 12px; color: var(--text2); }
+  .streak-detail { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .streak-badge {
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .streak-hot { background: rgba(249,115,22,0.15); color: var(--hot); }
+  .streak-active { background: rgba(16,185,129,0.15); color: var(--green); }
+
+  /* Gap Analysis */
+  .gap-analysis-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+    gap: 10px;
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+  }
+  .gap-num { font-size: 13px; font-weight: 600; font-family: 'JetBrains Mono', monospace; color: var(--accent); width: 30px; }
+  .gap-info { font-size: 12px; color: var(--text2); flex: 1; }
+  .gap-bar-w { width: 100px; height: 6px; background: var(--bg3); border-radius: 3px; }
+  .gap-bar-f { height: 100%; border-radius: 3px; background: var(--accent2); }
+
+  @media (max-width: 900px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .freq-grid { grid-template-columns: repeat(5, 1fr); }
+    .head-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .container { padding: 12px; }
+    .header h1 { font-size: 16px; }
+    .freq-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">
+    <div class="header-icon">🎰</div>
+    <div>
+      <h1>2026 大樂透進階統計分析系統</h1>
+      <div class="header-subtitle">Big Lotto Advanced Statistical Analysis · Taiwan</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button id="refreshBtn" onclick="refreshData()" class="hdr-btn hdr-btn-blue">
+      <span id="refreshIcon">🔄</span>
+      <span class="btn-label" id="refreshLabel">更新資料</span>
+    </button>
+    <button onclick="showManualInput()" class="hdr-btn hdr-btn-gold">
+      <span>✏️</span>
+      <span class="btn-label">手動輸入</span>
+    </button>
+    <div class="update-status">
+      <div class="dot" id="statusDot"></div>
+      <span id="statusText">載入中...</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Loading State -->
+  <div id="loadingState" class="loading">
+    <div class="spinner"></div>
+    <span>正在載入 2026/01/02 ~ 2026/04/17 真實開獎資料（第115001～115045期）...</span>
+  </div>
+
+  <!-- Main Content (hidden until loaded) -->
+  <div id="mainContent" style="display:none">
+
+    <!-- Alert -->
+    <div class="alert gap-20" id="dataAlert">
+      ⚠️ 本系統資料來源：台灣彩券官網（第115001～115045期，2026/01/02～2026/04/17），統計數據僅供參考，彩票開獎屬機率事件，請理性購買。
+    </div>
+
+    <!-- Latest Draw + Quick Stats -->
+    <div class="gap-24">
+      <div class="grid-2 gap-20" id="latestDrawSection">
+        <div class="card latest-draw">
+          <div class="card-title">
+            <div class="icon" style="background:rgba(59,130,246,0.2); color:var(--accent)">🏆</div>
+            最新開獎號碼
+          </div>
+          <div class="draw-info">
+            <div>
+              <div class="draw-period" id="drawPeriod">-</div>
+              <div class="draw-date" id="drawDate">-</div>
+            </div>
+            <div class="draw-prize">
+              <div class="prize-amount" id="jackpot">-</div>
+              <div class="prize-label">頭獎金額</div>
+            </div>
+          </div>
+          <div class="balls-container" id="latestBalls"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <div class="icon" style="background:rgba(139,92,246,0.2); color:var(--accent2)">📊</div>
+            本期分析
+          </div>
+          <div class="grid-2" id="drawStats"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs for Main Analysis -->
+    <div class="gap-24">
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('freq')">📈 頻率統計</button>
+        <button class="tab" onclick="showTab('missing')">⏳ 遺漏值</button>
+        <button class="tab" onclick="showTab('streak')">🔥 連莊分析</button>
+        <button class="tab" onclick="showTab('gap')">📐 斷區分析</button>
+        <button class="tab" onclick="showTab('sum')">➕ 和值分析</button>
+        <button class="tab" onclick="showTab('oddeven')">⚖️ 奇偶比</button>
+        <button class="tab" onclick="showTab('headtail')">🔢 頭尾數</button>
+        <button class="tab" onclick="showTab('suggest')">💡 建議號碼</button>
+      </div>
+
+      <!-- Frequency Tab -->
+      <div id="tab-freq" class="tab-content">
+        <div class="section-title">號碼出現頻率 <span class="section-badge">2026年全45期真實資料</span></div>
+        <div class="flex-row gap-12" style="margin-bottom:12px">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--hot)"></div>熱門號碼 (前10)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--cold)"></div>冷門號碼 (後10)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--border)"></div>一般號碼</div>
+        </div>
+        <div class="freq-grid gap-20" id="freqGrid"></div>
+
+        <div class="section-title" style="margin-top:24px">近10期熱門號碼走勢</div>
+        <div class="card">
+          <div class="bar-chart" id="hotTrendChart"></div>
+          <div style="display:flex; gap:4px; margin-top:4px" id="hotTrendLabels"></div>
+        </div>
+      </div>
+
+      <!-- Missing Values Tab -->
+      <div id="tab-missing" class="tab-content" style="display:none">
+        <div class="section-title">遺漏值分析 <span class="section-badge">距上次出現期數（全45期）</span></div>
+        <div class="alert">
+          遺漏值越大，表示該號碼越久未出現。統計上遺漏值回補的概率並不必然更高，僅供參考。
+        </div>
+        <div class="missing-grid" id="missingGrid"></div>
+
+        <div class="section-title" style="margin-top:24px">高遺漏值號碼 Top 15</div>
+        <div class="card">
+          <table class="analysis-table">
+            <thead><tr><th>號碼</th><th>遺漏值</th><th>歷史最高遺漏</th><th>遺漏%</th><th>狀態</th></tr></thead>
+            <tbody id="missingTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Streak Tab -->
+      <div id="tab-streak" class="tab-content" style="display:none">
+        <div class="section-title">連莊分析 <span class="section-badge">連續出現紀錄</span></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">📊 最長連莊紀錄 Top 10</div>
+            <div id="streakList"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">🔥 當前連莊號碼</div>
+            <div id="activeStreaks"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gap Analysis Tab -->
+      <div id="tab-gap" class="tab-content" style="display:none">
+        <div class="section-title">斷區分析 <span class="section-badge">號碼段分佈</span></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">📐 各區間出現頻率</div>
+            <div id="gapAnalysis"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 跨度分析</div>
+            <div id="spanAnalysis"></div>
+          </div>
+        </div>
+        <div class="gap-20"></div>
+        <div class="card">
+          <div class="card-title">近50期各區間分佈走勢</div>
+          <div style="position:relative; height:200px">
+            <canvas id="gapTrendChart" role="img" aria-label="各區間分佈走勢"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sum Analysis Tab -->
+      <div id="tab-sum" class="tab-content" style="display:none">
+        <div class="section-title">和值分析 <span class="section-badge">6球總和分布</span></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">📊 和值分布範圍</div>
+            <div id="sumRanges"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">📈 和值走勢 (近30期)</div>
+            <div style="position:relative; height:180px">
+              <canvas id="sumTrendChart" role="img" aria-label="和值走勢"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="gap-20"></div>
+        <div class="card">
+          <div class="card-title">近期和值詳細</div>
+          <table class="analysis-table">
+            <thead><tr><th>期數</th><th>日期</th><th>各球號碼</th><th>和值</th><th>範圍</th></tr></thead>
+            <tbody id="sumTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Odd/Even Tab -->
+      <div id="tab-oddeven" class="tab-content" style="display:none">
+        <div class="section-title">奇偶比分析 <span class="section-badge">6個號碼奇偶比例</span></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">⚖️ 奇偶比例分布</div>
+            <div id="oddEvenDist"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">📈 近30期奇偶走勢</div>
+            <div style="position:relative; height:180px">
+              <canvas id="oddEvenChart" role="img" aria-label="奇偶比走勢"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="gap-20"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">🔢 大小比例 (1-25 小 / 26-49 大)</div>
+            <div id="bigSmallDist"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 最近10期奇偶詳細</div>
+            <div id="recentOddEven"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Head/Tail Tab -->
+      <div id="tab-headtail" class="tab-content" style="display:none">
+        <div class="section-title">頭數尾數分析 <span class="section-badge">十位數 / 個位數</span></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">🔟 頭數分析 (十位數)</div>
+            <div class="head-grid" id="headGrid"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">0️⃣ 尾數分析 (個位數)</div>
+            <div class="tail-grid" id="tailGrid"></div>
+          </div>
+        </div>
+        <div class="gap-20"></div>
+        <div class="card">
+          <div class="card-title">頭數尾數組合熱門統計</div>
+          <table class="analysis-table">
+            <thead><tr><th>頭數</th><th>尾數</th><th>號碼範圍</th><th>出現次數</th><th>頻率</th></tr></thead>
+            <tbody id="headTailTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Suggest Tab -->
+      <div id="tab-suggest" class="tab-content" style="display:none">
+        <div class="section-title">💡 建議號碼 <span class="section-badge">綜合統計分析</span></div>
+        <div class="alert">
+          以下號碼由統計演算法根據頻率、遺漏值、奇偶比、和值等指標綜合生成，不代表必中。6碼組每注50元，7碼包牌每組350元（含7種6碼組合）。
+        </div>
+        <div id="suggestSets"></div>
+
+        <div class="section-title" style="margin-top:24px">生成策略說明</div>
+        <div class="card">
+          <table class="analysis-table">
+            <thead><tr><th>組別</th><th>碼數</th><th>策略</th><th>說明</th></tr></thead>
+            <tbody>
+              <tr><td class="num-col">A</td><td style="color:var(--accent)">6碼</td><td>熱門優先</td><td style="color:var(--text2)">出現頻率最高的6個號碼</td></tr>
+              <tr><td class="num-col">B</td><td style="color:var(--accent)">6碼</td><td>遺漏回補</td><td style="color:var(--text2)">遺漏值最高的6個號碼</td></tr>
+              <tr><td class="num-col">C</td><td style="color:var(--accent)">6碼</td><td>冷熱平衡 3+3</td><td style="color:var(--text2)">3個熱門號 + 3個遺漏號</td></tr>
+              <tr><td class="num-col">D</td><td style="color:var(--accent)">6碼</td><td>奇偶 3:3</td><td style="color:var(--text2)">奇偶各3碼，取熱門池</td></tr>
+              <tr><td class="num-col">E</td><td style="color:var(--accent)">6碼</td><td>大小 3:3</td><td style="color:var(--text2)">大(25-49)小(1-24)各3碼</td></tr>
+              <tr><td class="num-col">F</td><td style="color:var(--accent)">6碼</td><td>統計隨機①</td><td style="color:var(--text2)">依歷史頻率加權隨機抽取</td></tr>
+              <tr><td class="num-col">G</td><td style="color:var(--accent)">6碼</td><td>統計隨機②</td><td style="color:var(--text2)">依歷史頻率加權隨機抽取（另一組）</td></tr>
+              <tr><td class="num-col">H</td><td style="color:var(--accent)">6碼</td><td>遺漏2+熱門4</td><td style="color:var(--text2)">2個高遺漏 + 4個熱門號</td></tr>
+              <tr><td class="num-col">I</td><td style="color:var(--accent)">6碼</td><td>熱門4+遺漏2</td><td style="color:var(--text2)">4個熱門號 + 2個高遺漏</td></tr>
+              <tr><td class="num-col">J</td><td style="color:var(--accent)">6碼</td><td>奇偶 2:4</td><td style="color:var(--text2)">奇2偶4，偶數偏多</td></tr>
+              <tr><td class="num-col">K</td><td style="color:var(--gold)">7碼</td><td>7碼熱門包牌</td><td style="color:var(--text2)">頻率最高7碼，包含全部7種6碼組合</td></tr>
+              <tr><td class="num-col">L</td><td style="color:var(--gold)">7碼</td><td>7碼統計包牌</td><td style="color:var(--text2)">依頻率加權抽取7碼包牌</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:16px; text-align:center">
+            <button class="btn btn-gold" onclick="generateNewSets()">🔄 重新生成建議號碼</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- History Section -->
+    <div class="card gap-20">
+      <div class="flex-row" style="justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+        <div class="section-title" style="margin:0;border:none;padding:0">近期開獎記錄</div>
+        <div class="flex-row">
+          <span style="font-size:12px;color:var(--text3)">顯示：</span>
+          <select id="historyCount" onchange="renderHistory()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">
+            <option value="10">近10期</option>
+            <option value="20" selected>近20期</option>
+            <option value="50">近50期</option>
+          </select>
+        </div>
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+
+  </div><!-- /mainContent -->
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// =============================================
+// DATA ENGINE
+// =============================================
+
+let allDraws = [];
+let charts = {};
+
+// ===== 內建備用資料（draws.json 讀取失敗時使用）=====
+const FALLBACK_DRAWS = [
+  { period:'第115045期', date:'2026-04-17', numbers:[7,10,11,22,40,45], special:18, jackpot:'無人中獎' },
+  { period:'第115044期', date:'2026-04-14', numbers:[4,8,21,23,24,43], special:13, jackpot:'無人中獎' },
+  { period:'第115043期', date:'2026-04-10', numbers:[4,10,15,17,21,40], special:30, jackpot:'無人中獎' },
+  { period:'第115042期', date:'2026-04-07', numbers:[1,2,6,16,18,26], special:47, jackpot:'無人中獎' },
+  { period:'第115041期', date:'2026-04-03', numbers:[5,12,13,25,36,48], special:8, jackpot:'無人中獎' },
+  { period:'第115040期', date:'2026-03-31', numbers:[5,11,25,40,45,47], special:39, jackpot:'無人中獎' },
+  { period:'第115039期', date:'2026-03-27', numbers:[4,8,23,26,29,36], special:38, jackpot:'無人中獎' },
+  { period:'第115038期', date:'2026-03-24', numbers:[14,33,41,42,44,48], special:47, jackpot:'無人中獎' },
+  { period:'第115037期', date:'2026-03-20', numbers:[11,15,33,38,41,43], special:21, jackpot:'無人中獎' },
+  { period:'第115036期', date:'2026-03-17', numbers:[2,6,10,22,40,45], special:17, jackpot:'無人中獎' },
+  { period:'第115035期', date:'2026-03-13', numbers:[5,12,13,38,47,48], special:3, jackpot:'無人中獎' },
+  { period:'第115034期', date:'2026-03-10', numbers:[5,11,29,37,43,47], special:10, jackpot:'無人中獎' },
+  { period:'第115033期', date:'2026-03-06', numbers:[9,11,12,14,23,25], special:42, jackpot:'無人中獎' },
+  { period:'第115032期', date:'2026-03-03', numbers:[5,26,27,35,45,46], special:37, jackpot:'無人中獎' },
+  { period:'第115031期', date:'2026-03-02', numbers:[19,25,27,28,33,39], special:37, jackpot:'無人中獎' },
+  { period:'第115030期', date:'2026-03-01', numbers:[4,7,34,40,44,49], special:37, jackpot:'無人中獎' },
+  { period:'第115029期', date:'2026-02-28', numbers:[17,23,30,37,39,49], special:43, jackpot:'無人中獎' },
+  { period:'第115028期', date:'2026-02-27', numbers:[14,18,19,34,45,47], special:48, jackpot:'無人中獎' },
+  { period:'第115027期', date:'2026-02-26', numbers:[1,16,22,24,47,48], special:7, jackpot:'無人中獎' },
+  { period:'第115026期', date:'2026-02-25', numbers:[7,15,22,38,45,49], special:31, jackpot:'無人中獎' },
+  { period:'第115025期', date:'2026-02-24', numbers:[12,19,22,27,28,31], special:45, jackpot:'無人中獎' },
+  { period:'第115024期', date:'2026-02-23', numbers:[6,10,23,27,47,48], special:30, jackpot:'無人中獎' },
+  { period:'第115023期', date:'2026-02-22', numbers:[5,7,17,22,24,47], special:20, jackpot:'無人中獎' },
+  { period:'第115022期', date:'2026-02-21', numbers:[12,13,17,27,41,48], special:46, jackpot:'無人中獎' },
+  { period:'第115021期', date:'2026-02-20', numbers:[13,15,18,24,33,49], special:10, jackpot:'無人中獎' },
+  { period:'第115020期', date:'2026-02-19', numbers:[16,35,36,37,39,49], special:45, jackpot:'1.0億 1注' },
+  { period:'第115019期', date:'2026-02-18', numbers:[20,28,29,31,35,41], special:6, jackpot:'無人中獎' },
+  { period:'第115018期', date:'2026-02-17', numbers:[6,12,24,26,37,46], special:36, jackpot:'無人中獎' },
+  { period:'第115017期', date:'2026-02-16', numbers:[11,16,18,27,38,46], special:43, jackpot:'1.0億 1注' },
+  { period:'第115016期', date:'2026-02-15', numbers:[3,6,11,18,25,28], special:35, jackpot:'無人中獎' },
+  { period:'第115015期', date:'2026-02-14', numbers:[1,11,22,35,36,40], special:28, jackpot:'無人中獎' },
+  { period:'第115014期', date:'2026-02-13', numbers:[9,20,25,35,39,48], special:47, jackpot:'無人中獎' },
+  { period:'第115013期', date:'2026-02-12', numbers:[1,3,8,15,20,48], special:46, jackpot:'無人中獎' },
+  { period:'第115012期', date:'2026-02-10', numbers:[6,16,20,21,24,35], special:13, jackpot:'無人中獎' },
+  { period:'第115011期', date:'2026-02-06', numbers:[4,12,24,25,39,48], special:9, jackpot:'無人中獎' },
+  { period:'第115010期', date:'2026-02-03', numbers:[6,14,32,33,39,43], special:13, jackpot:'無人中獎' },
+  { period:'第115009期', date:'2026-01-30', numbers:[9,13,27,31,32,39], special:19, jackpot:'無人中獎' },
+  { period:'第115008期', date:'2026-01-27', numbers:[4,11,24,25,29,30], special:8, jackpot:'無人中獎' },
+  { period:'第115007期', date:'2026-01-23', numbers:[21,23,32,36,39,43], special:12, jackpot:'無人中獎' },
+  { period:'第115006期', date:'2026-01-20', numbers:[2,7,26,41,44,45], special:46, jackpot:'無人中獎' },
+  { period:'第115005期', date:'2026-01-16', numbers:[9,10,21,22,25,36], special:20, jackpot:'無人中獎' },
+  { period:'第115004期', date:'2026-01-13', numbers:[2,10,18,19,39,49], special:24, jackpot:'1.1億 1注' },
+  { period:'第115003期', date:'2026-01-09', numbers:[1,7,13,14,34,45], special:8, jackpot:'無人中獎' },
+  { period:'第115002期', date:'2026-01-06', numbers:[2,23,33,38,39,45], special:6, jackpot:'無人中獎' },
+  { period:'第115001期', date:'2026-01-02', numbers:[3,7,16,19,40,42], special:12, jackpot:'無人中獎' },
+];
+
+// 從 draws.json 載入（GitHub Actions 每週自動更新）
+async function loadDrawsFromJson() {
+  try {
+    const res = await fetch('./draws.json?t=' + Date.now(), { cache: 'no-cache' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!Array.isArray(data.draws) || data.draws.length === 0) throw new Error('空資料');
+    console.log(`✅ 從 draws.json 載入 ${data.draws.length} 期，更新時間: ${data.updatedAt}`);
+    return { draws: data.draws, updatedAt: data.updatedAt, fromJson: true };
+  } catch (e) {
+    console.warn('⚠️ 無法載入 draws.json，使用內建資料:', e.message);
+    return { draws: FALLBACK_DRAWS, updatedAt: null, fromJson: false };
+  }
+}
+
+// =============================================
+// COMPUTE STATISTICS
+// =============================================
+
+function computeFrequency(draws, last = 100) {
+  const freq = {};
+  for (let i = 1; i <= 49; i++) freq[i] = 0;
+  
+  const subset = draws.slice(0, Math.min(last, draws.length));
+  subset.forEach(d => {
+    d.numbers.forEach(n => { freq[n]++; });
+    freq[d.special]++; // count special too? Let's only count main
+  });
+  // Redo: only main numbers
+  for (let i = 1; i <= 49; i++) freq[i] = 0;
+  subset.forEach(d => d.numbers.forEach(n => freq[n]++));
+  return freq;
+}
+
+function computeMissing(draws) {
+  const missing = {};
+  for (let i = 1; i <= 49; i++) missing[i] = 0;
+  
+  for (let d = 0; d < draws.length; d++) {
+    const allNums = [...draws[d].numbers, draws[d].special];
+    for (let i = 1; i <= 49; i++) {
+      if (!missing[i] && !draws[d].numbers.includes(i)) {
+        missing[i]++;
+      }
+    }
+  }
+  
+  // Proper calculation: for each number, count draws since last appearance
+  const miss = {};
+  for (let i = 1; i <= 49; i++) {
+    let count = 0;
+    for (let d = 0; d < draws.length; d++) {
+      if (draws[d].numbers.includes(i)) break;
+      count++;
+    }
+    miss[i] = count;
+  }
+  return miss;
+}
+
+function computeHistoricMaxMissing(draws) {
+  const maxMiss = {};
+  for (let i = 1; i <= 49; i++) {
+    let maxSeen = 0, current = 0;
+    draws.forEach(d => {
+      if (d.numbers.includes(i)) { 
+        if (current > maxSeen) maxSeen = current;
+        current = 0;
+      } else {
+        current++;
+      }
+    });
+    maxMiss[i] = Math.max(maxSeen, current);
+  }
+  return maxMiss;
+}
+
+function computeStreaks(draws) {
+  const streaks = {};
+  for (let i = 1; i <= 49; i++) {
+    let maxStreak = 0, currentStreak = 0;
+    let activeStreak = 0;
+    let inActive = true;
+    
+    draws.forEach((d, idx) => {
+      if (d.numbers.includes(i)) {
+        currentStreak++;
+        if (currentStreak > maxStreak) maxStreak = currentStreak;
+        if (inActive) activeStreak++;
+      } else {
+        if (inActive && idx > 0) inActive = false;
+        currentStreak = 0;
+      }
+    });
+    streaks[i] = { max: maxStreak, active: inActive ? activeStreak : 0 };
+  }
+  return streaks;
+}
+
+function computeOddEven(draws, last = 50) {
+  const subset = draws.slice(0, Math.min(last, draws.length));
+  const dist = {};
+  for (let odd = 0; odd <= 6; odd++) dist[`${odd}:${6-odd}`] = 0;
+  
+  subset.forEach(d => {
+    const odds = d.numbers.filter(n => n % 2 !== 0).length;
+    const key = `${odds}:${6-odds}`;
+    dist[key]++;
+  });
+  return dist;
+}
+
+function computeSum(draws, last = 100) {
+  return draws.slice(0, last).map(d => ({
+    period: d.period,
+    date: d.date,
+    numbers: d.numbers,
+    sum: d.numbers.reduce((a, b) => a + b, 0)
+  }));
+}
+
+function computeHeadDigits(draws, last = 100) {
+  const heads = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+  const subset = draws.slice(0, last);
+  let total = 0;
+  subset.forEach(d => {
+    d.numbers.forEach(n => {
+      const h = Math.floor(n / 10);
+      if (h >= 1 && h <= 4) { heads[h]++; total++; }
+      else if (n >= 1 && n <= 9) { heads[1]++; total++; }
+      else if (n >= 40) { heads[4]++; total++; }
+    });
+  });
+  // More accurate
+  const h2 = {};
+  for (let k in heads) h2[k] = 0;
+  subset.forEach(d => {
+    d.numbers.forEach(n => {
+      const h = n <= 9 ? 0 : Math.floor(n / 10);
+      if (!h2[h]) h2[h] = 0;
+      h2[h]++;
+    });
+  });
+  return h2;
+}
+
+function computeTailDigits(draws, last = 100) {
+  const tails = {};
+  for (let i = 0; i <= 9; i++) tails[i] = 0;
+  draws.slice(0, last).forEach(d => {
+    d.numbers.forEach(n => { tails[n % 10]++; });
+  });
+  return tails;
+}
+
+function computeGapAnalysis(draws, last = 100) {
+  // Zones: 1-10, 11-20, 21-30, 31-40, 41-49
+  const zones = {
+    '01-10': {count:0, min:1, max:10},
+    '11-20': {count:0, min:11, max:20},
+    '21-30': {count:0, min:21, max:30},
+    '31-40': {count:0, min:31, max:40},
+    '41-49': {count:0, min:41, max:49}
+  };
+  const subset = draws.slice(0, last);
+  subset.forEach(d => {
+    d.numbers.forEach(n => {
+      for (let z in zones) {
+        if (n >= zones[z].min && n <= zones[z].max) zones[z].count++;
+      }
+    });
+  });
+  return zones;
+}
+
+// =============================================
+// GENERATE SUGGESTION
+// =============================================
+
+function generateSuggestions(freq, missing) {
+  // 建立含分數的號碼陣列 [{num, score}]
+  const freqArr  = Object.entries(freq).map(([k,v])=>({num:+k, score:v})).sort((a,b)=>b.score-a.score);
+  const missArr  = Object.entries(missing).map(([k,v])=>({num:+k, score:v})).sort((a,b)=>b.score-a.score);
+
+  // Fisher-Yates shuffle
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i=a.length-1; i>0; i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  // 從排行前 poolSize 的號碼裡隨機取 n 個（每次不同）
+  function randFromTop(arr, poolSize, n) {
+    const pool = shuffle(arr.slice(0, poolSize)).map(x=>x.num);
+    const used = new Set();
+    const result = [];
+    for (const num of pool) {
+      if (result.length >= n) break;
+      if (!used.has(num)) { used.add(num); result.push(num); }
+    }
+    while (result.length < n) {
+      const r = Math.floor(Math.random()*49)+1;
+      if (!used.has(r)) { used.add(r); result.push(r); }
+    }
+    return result.sort((a,b)=>a-b);
+  }
+
+  // 加權隨機（每次真正不同）
+  function weightedRandom(n) {
+    // 加入額外隨機擾動：對每個號碼分數加一個隨機小量再排序
+    const noisy = freqArr.map(x=>({num:x.num, score: x.score + Math.random()*0.8}));
+    noisy.sort((a,b)=>b.score-a.score);
+    const used = new Set();
+    const result = [];
+    for (const x of noisy) {
+      if (result.length >= n) break;
+      if (!used.has(x.num)) { used.add(x.num); result.push(x.num); }
+    }
+    while (result.length < n) {
+      const r = Math.floor(Math.random()*49)+1;
+      if (!used.has(r)) { used.add(r); result.push(r); }
+    }
+    return result.sort((a,b)=>a-b);
+  }
+
+  // 混合兩個 pool，各 take n 個（隨機 shuffle 後取）
+  function mixPools(pool1, poolSize1, take1, pool2, poolSize2, take2) {
+    const p1 = shuffle(pool1.slice(0, poolSize1)).map(x=>x.num);
+    const p2 = shuffle(pool2.slice(0, poolSize2)).map(x=>x.num);
+    const used = new Set();
+    const result = [];
+    let i1=0, i2=0;
+    while (result.length < take1) {
+      if (i1 >= p1.length) break;
+      if (!used.has(p1[i1])) { used.add(p1[i1]); result.push(p1[i1]); }
+      i1++;
+    }
+    while (result.length < take1+take2) {
+      if (i2 >= p2.length) break;
+      if (!used.has(p2[i2])) { used.add(p2[i2]); result.push(p2[i2]); }
+      i2++;
+    }
+    while (result.length < take1+take2) {
+      const r = Math.floor(Math.random()*49)+1;
+      if (!used.has(r)) { used.add(r); result.push(r); }
+    }
+    return result.sort((a,b)=>a-b);
+  }
+
+  // 奇偶指定比例，從 pool 裡隨機取（shuffle 後選）
+  function pickOddEven(oddCount, evenCount, poolSize) {
+    const pool = shuffle(freqArr.slice(0, poolSize));
+    const odds  = pool.filter(x=>x.num%2!==0).slice(0,oddCount*3).map(x=>x.num);
+    const evens = pool.filter(x=>x.num%2===0).slice(0,evenCount*3).map(x=>x.num);
+    const used = new Set();
+    const result = [];
+    shuffle(odds).slice(0,oddCount).forEach(n=>{ if(!used.has(n)){used.add(n);result.push(n);} });
+    shuffle(evens).slice(0,evenCount).forEach(n=>{ if(!used.has(n)){used.add(n);result.push(n);} });
+    while (result.length < oddCount+evenCount) {
+      const r = Math.floor(Math.random()*49)+1;
+      if (!used.has(r)) { used.add(r); result.push(r); }
+    }
+    return result.sort((a,b)=>a-b);
+  }
+
+  // 大小指定比例（小:1-24 大:25-49）
+  function pickBigSmall(smallCount, bigCount, poolSize) {
+    const pool = shuffle(freqArr.slice(0, poolSize));
+    const smalls = pool.filter(x=>x.num<=24).map(x=>x.num);
+    const bigs   = pool.filter(x=>x.num>=25).map(x=>x.num);
+    const used = new Set();
+    const result = [];
+    shuffle(smalls).slice(0,smallCount).forEach(n=>{ if(!used.has(n)){used.add(n);result.push(n);} });
+    shuffle(bigs).slice(0,bigCount).forEach(n=>{ if(!used.has(n)){used.add(n);result.push(n);} });
+    while (result.length < smallCount+bigCount) {
+      const r = Math.floor(Math.random()*49)+1;
+      if (!used.has(r)) { used.add(r); result.push(r); }
+    }
+    return result.sort((a,b)=>a-b);
+  }
+
+  function pickSpecial(excludeArr) {
+    let s;
+    do { s = Math.floor(Math.random()*49)+1; } while(excludeArr.includes(s));
+    return s;
+  }
+
+  const sets = [];
+
+  // A 熱門優先：前12名隨機取6
+  const A = randFromTop(freqArr, 12, 6);
+  sets.push({label:'A', type:6, strategy:'熱門優先', desc:'出現頻率前12名隨機取6', nums:A, special:pickSpecial(A)});
+
+  // B 遺漏回補：遺漏前12名隨機取6
+  const B = randFromTop(missArr, 12, 6);
+  sets.push({label:'B', type:6, strategy:'遺漏回補', desc:'遺漏值前12名隨機取6', nums:B, special:pickSpecial(B)});
+
+  // C 冷熱3+3：熱門前10 + 遺漏前10 各隨機3
+  const C = mixPools(freqArr,10,3, missArr,10,3);
+  sets.push({label:'C', type:6, strategy:'冷熱3+3', desc:'熱門前10隨機3 + 遺漏前10隨機3', nums:C, special:pickSpecial(C)});
+
+  // D 奇偶3:3
+  const D = pickOddEven(3, 3, 20);
+  sets.push({label:'D', type:6, strategy:'奇偶3:3', desc:'熱門池奇偶各3碼', nums:D, special:pickSpecial(D)});
+
+  // E 大小3:3
+  const E = pickBigSmall(3, 3, 20);
+  sets.push({label:'E', type:6, strategy:'大小3:3', desc:'大(25-49)小(1-24)各3碼', nums:E, special:pickSpecial(E)});
+
+  // F 加權隨機①
+  const F = weightedRandom(6);
+  sets.push({label:'F', type:6, strategy:'統計隨機①', desc:'頻率加權+隨機擾動', nums:F, special:pickSpecial(F)});
+
+  // G 加權隨機②
+  const G = weightedRandom(6);
+  sets.push({label:'G', type:6, strategy:'統計隨機②', desc:'頻率加權+隨機擾動', nums:G, special:pickSpecial(G)});
+
+  // H 遺漏2+熱門4
+  const H = mixPools(missArr,10,2, freqArr,10,4);
+  sets.push({label:'H', type:6, strategy:'遺漏2+熱門4', desc:'遺漏前10隨機2 + 熱門前10隨機4', nums:H, special:pickSpecial(H)});
+
+  // I 熱門4+遺漏2
+  const I = mixPools(freqArr,10,4, missArr,10,2);
+  sets.push({label:'I', type:6, strategy:'熱門4+遺漏2', desc:'熱門前10隨機4 + 遺漏前10隨機2', nums:I, special:pickSpecial(I)});
+
+  // J 奇偶2:4
+  const J = pickOddEven(2, 4, 20);
+  sets.push({label:'J', type:6, strategy:'奇偶2:4', desc:'奇2偶4，偶數偏多', nums:J, special:pickSpecial(J)});
+
+  // K 7碼：熱門前15隨機取7
+  const K = randFromTop(freqArr, 15, 7);
+  sets.push({label:'K', type:7, strategy:'7碼熱門包牌', desc:'頻率前15名隨機取7碼', nums:K, special:pickSpecial(K)});
+
+  // L 7碼加權隨機
+  const L = weightedRandom(7);
+  sets.push({label:'L', type:7, strategy:'7碼統計包牌', desc:'頻率加權+擾動取7碼', nums:L, special:pickSpecial(L)});
+
+  return sets;
+}
+
+// =============================================
+// RENDER FUNCTIONS
+// =============================================
+
+function renderLatestDraw(d) {
+  document.getElementById('drawPeriod').textContent = d.period;
+  document.getElementById('drawDate').textContent = d.date + ' 開獎';
+  document.getElementById('jackpot').textContent = d.jackpot;
+  
+  const ballsEl = document.getElementById('latestBalls');
+  ballsEl.innerHTML = '';
+  d.numbers.forEach(n => {
+    const b = document.createElement('div');
+    b.className = 'ball ball-normal';
+    b.textContent = String(n).padStart(2,'0');
+    ballsEl.appendChild(b);
+  });
+  
+  const plus = document.createElement('div');
+  plus.className = 'ball ball-plus';
+  plus.textContent = '+';
+  ballsEl.appendChild(plus);
+  
+  const sb = document.createElement('div');
+  sb.className = 'ball ball-special';
+  sb.textContent = String(d.special).padStart(2,'0');
+  ballsEl.appendChild(sb);
+}
+
+function renderDrawStats(d, draws) {
+  const sum = d.numbers.reduce((a,b)=>a+b,0);
+  const odds = d.numbers.filter(n=>n%2!==0).length;
+  const evens = 6-odds;
+  const span = d.numbers[5] - d.numbers[0];
+  const bigs = d.numbers.filter(n=>n>=26).length;
+  const smalls = 6-bigs;
+  
+  const statsEl = document.getElementById('drawStats');
+  const stats = [
+    {label:'號碼和值', val:sum, note: sum<100?'偏低':sum>175?'偏高':'適中'},
+    {label:'奇偶比', val:`${odds}:${evens}`, note: odds===evens?'均衡':'偏'+(odds>evens?'奇':'偶')},
+    {label:'大小比', val:`${bigs}:${smalls}`, note: bigs===smalls?'均衡':''},
+    {label:'號碼跨度', val:span, note: span<30?'小跨度':span>40?'大跨度':'中跨度'},
+  ];
+  
+  statsEl.innerHTML = stats.map(s=>`
+    <div class="stat-card">
+      <div class="stat-value">${s.val}</div>
+      <div class="stat-label">${s.label}</div>
+      ${s.note?`<div class="stat-change ${s.note.includes('高')||s.note.includes('奇')?'negative':'positive'}">${s.note}</div>`:''}
+    </div>
+  `).join('');
+}
+
+function renderFrequency(freq) {
+  const values = Object.values(freq);
+  const maxFreq = Math.max(...values);
+  const sorted = Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+  const topNums = sorted.slice(0,10).map(e=>+e[0]);
+  const bottomNums = sorted.slice(-10).map(e=>+e[0]);
+  
+  const grid = document.getElementById('freqGrid');
+  grid.innerHTML = '';
+  
+  for (let i = 1; i <= 49; i++) {
+    const count = freq[i];
+    const isHot = topNums.includes(i);
+    const isCold = bottomNums.includes(i);
+    const pct = Math.round((count / maxFreq) * 100);
+    
+    let cls = 'freq-item';
+    if (isHot) cls += ' hot-num';
+    else if (isCold) cls += ' cold-num';
+    
+    const div = document.createElement('div');
+    div.className = cls;
+    div.title = `號碼 ${i}: 出現 ${count} 次`;
+    div.innerHTML = `
+      <div class="freq-num">${String(i).padStart(2,'0')}</div>
+      <div class="freq-count">${count}次</div>
+      <div class="freq-bar" style="width:${pct}%"></div>
+    `;
+    grid.appendChild(div);
+  }
+  
+  // Hot trend chart
+  const topHot = sorted.slice(0,10).map(e=>+e[0]);
+  renderHotTrend(topHot);
+}
+
+function renderHotTrend(topNums) {
+  const container = document.getElementById('hotTrendChart');
+  const labelsEl = document.getElementById('hotTrendLabels');
+  container.innerHTML = '';
+  labelsEl.innerHTML = '';
+  
+  const colors = ['#3b82f6','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444','#f97316','#ec4899','#14b8a6','#84cc16'];
+  
+  topNums.slice(0,10).forEach((num, idx) => {
+    const count = allDraws.slice(0,10).filter(d=>d.numbers.includes(num)).length;
+    const maxH = 100;
+    const h = Math.max(10, (count/6)*maxH);
+    
+    const wrap = document.createElement('div');
+    wrap.className = 'bar-wrap';
+    wrap.innerHTML = `
+      <div class="bar-val">${count}</div>
+      <div class="bar" style="height:${h}px; background:${colors[idx]}" title="${num}號: ${count}次"></div>
+      <div class="bar-label">${String(num).padStart(2,'0')}</div>
+    `;
+    container.appendChild(wrap);
+    
+    const leg = document.createElement('div');
+    leg.className = 'legend-item';
+    leg.style.cssText = 'font-size:10px';
+    leg.innerHTML = `<div class="legend-dot" style="background:${colors[idx]}"></div>${num}`;
+    labelsEl.appendChild(leg);
+  });
+}
+
+function renderMissing(missing, maxMiss) {
+  const sortedMiss = Object.entries(missing).sort((a,b)=>b[1]-a[1]);
+  const maxVal = sortedMiss[0][1];
+  
+  // Grid
+  const grid = document.getElementById('missingGrid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 49; i++) {
+    const miss = missing[i];
+    const cls = miss > 15 ? 'missing-item high-missing' : 'missing-item';
+    const div = document.createElement('div');
+    div.className = cls;
+    div.innerHTML = `
+      <div class="missing-num">${String(i).padStart(2,'0')}</div>
+      <div class="missing-val">遺漏${miss}</div>
+    `;
+    grid.appendChild(div);
+  }
+  
+  // Table
+  const tbody = document.getElementById('missingTable');
+  tbody.innerHTML = sortedMiss.slice(0,15).map(([num, miss]) => {
+    const max = maxMiss[num] || 0;
+    const pct = max > 0 ? Math.round((miss/max)*100) : 0;
+    const status = miss > 25 ? '⚠️ 超高遺漏' : miss > 15 ? '🔴 高遺漏' : miss > 8 ? '🟡 中遺漏' : '🟢 正常';
+    return `<tr>
+      <td class="num-col">${String(num).padStart(2,'0')}</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--accent2)">${miss}</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--text3)">${max}</td>
+      <td style="font-family:'JetBrains Mono',monospace">${pct}%</td>
+      <td>${status}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderStreaks(streaks) {
+  const sorted = Object.entries(streaks).sort((a,b)=>b[1].max-a[1].max);
+  
+  // Top streaks
+  const listEl = document.getElementById('streakList');
+  listEl.innerHTML = sorted.slice(0,10).map(([num, s]) => `
+    <div class="streak-item">
+      <div class="streak-num">${String(num).padStart(2,'0')}</div>
+      <div class="streak-info">
+        <div class="streak-label">最長連莊 ${s.max} 期</div>
+        <div class="streak-detail">號碼 ${num}</div>
+      </div>
+      <div class="streak-badge streak-hot">${s.max}期</div>
+    </div>
+  `).join('');
+  
+  // Active streaks
+  const active = Object.entries(streaks).filter(([n,s])=>s.active>0).sort((a,b)=>b[1].active-a[1].active);
+  const activeEl = document.getElementById('activeStreaks');
+  if (active.length === 0) {
+    activeEl.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:16px 0">目前無連莊號碼</div>';
+  } else {
+    activeEl.innerHTML = active.slice(0,10).map(([num, s]) => `
+      <div class="streak-item">
+        <div class="streak-num" style="background:linear-gradient(135deg,#065f46,#10b981)">${String(num).padStart(2,'0')}</div>
+        <div class="streak-info">
+          <div class="streak-label">連續出現中</div>
+          <div class="streak-detail">已連莊 ${s.active} 期</div>
+        </div>
+        <div class="streak-badge streak-active">連${s.active}</div>
+      </div>
+    `).join('');
+  }
+}
+
+function renderGapAnalysis(zones, draws) {
+  const el = document.getElementById('gapAnalysis');
+  const total = Object.values(zones).reduce((a,z)=>a+z.count,0);
+  
+  el.innerHTML = Object.entries(zones).map(([zone, data]) => {
+    const pct = total > 0 ? Math.round((data.count/total)*100) : 0;
+    return `
+      <div class="gap-analysis-row">
+        <div class="gap-num">${zone}</div>
+        <div class="gap-info">${data.count}次 (${pct}%)</div>
+        <div class="gap-bar-w"><div class="gap-bar-f" style="width:${pct}%"></div></div>
+      </div>
+    `;
+  }).join('');
+  
+  // Span analysis
+  const spanEl = document.getElementById('spanAnalysis');
+  const spans = draws.slice(0,100).map(d=>d.numbers[5]-d.numbers[0]);
+  const avgSpan = Math.round(spans.reduce((a,b)=>a+b,0)/spans.length);
+  const spanDist = {'>40':0,'31-40':0,'21-30':0,'<=20':0};
+  spans.forEach(s=>{
+    if (s>40) spanDist['>40']++;
+    else if (s>=31) spanDist['31-40']++;
+    else if (s>=21) spanDist['21-30']++;
+    else spanDist['<=20']++;
+  });
+  
+  spanEl.innerHTML = `
+    <div style="margin-bottom:12px;font-size:13px;color:var(--text2)">平均跨度: <span style="color:var(--accent);font-weight:700;font-family:'JetBrains Mono',monospace">${avgSpan}</span></div>
+    ${Object.entries(spanDist).map(([k,v])=>{
+      const pct = Math.round((v/spans.length)*100);
+      return `<div class="gap-analysis-row">
+        <div class="gap-num" style="width:60px;font-size:12px">${k}</div>
+        <div class="gap-info">${v}次 (${pct}%)</div>
+        <div class="gap-bar-w"><div class="gap-bar-f" style="width:${pct}%;background:var(--green)"></div></div>
+      </div>`;
+    }).join('')}
+  `;
+  
+  // Trend chart
+  if (charts.gapTrend) { charts.gapTrend.destroy(); }
+  const zoneLabels = Object.keys(zones);
+  const zoneColors = ['#3b82f6','#8b5cf6','#06b6d4','#10b981','#f59e0b'];
+  const last50 = draws.slice(0,50);
+  const datasets = zoneLabels.map((z,i) => ({
+    label: z,
+    data: last50.map(d => d.numbers.filter(n=>n>=zones[z].min&&n<=zones[z].max).length),
+    borderColor: zoneColors[i],
+    tension: 0.3,
+    pointRadius: 2,
+    borderWidth: 2,
+    fill: false
+  }));
+  
+  charts.gapTrend = new Chart(document.getElementById('gapTrendChart'), {
+    type: 'line',
+    data: { labels: last50.map(d=>d.period.slice(-4)), datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#64748b', font: {size:9}, maxRotation:45 }, grid: { color: '#1e2d45' } },
+        y: { ticks: { color: '#64748b', font: {size:9} }, grid: { color: '#1e2d45' }, min: 0, max: 6 }
+      }
+    }
+  });
+}
+
+function renderSumAnalysis(draws) {
+  const sums = computeSum(draws, 100);
+  const sumVals = sums.map(s=>s.sum);
+  const avg = Math.round(sumVals.reduce((a,b)=>a+b,0)/sumVals.length);
+  const min = Math.min(...sumVals);
+  const max = Math.max(...sumVals);
+  
+  const ranges = [
+    {label:'60-90', min:60, max:90},
+    {label:'91-120', min:91, max:120},
+    {label:'121-150', min:121, max:150},
+    {label:'151-180', min:151, max:180},
+    {label:'181-210', min:181, max:210},
+    {label:'211+', min:211, max:999},
+  ];
+  
+  const rangeCounts = ranges.map(r=>({...r, count: sumVals.filter(s=>s>=r.min&&s<=r.max).length}));
+  const maxCount = Math.max(...rangeCounts.map(r=>r.count));
+  
+  document.getElementById('sumRanges').innerHTML = `
+    <div style="margin-bottom:12px;font-size:13px;color:var(--text2)">
+      平均: <span style="color:var(--accent);font-weight:700;font-family:'JetBrains Mono',monospace">${avg}</span>
+      &nbsp;最小: <span style="color:var(--cold);font-family:'JetBrains Mono',monospace">${min}</span>
+      &nbsp;最大: <span style="color:var(--hot);font-family:'JetBrains Mono',monospace">${max}</span>
+    </div>
+    ${rangeCounts.map(r=>`
+      <div class="range-item">
+        <div class="range-label">${r.label}</div>
+        <div class="range-bar-wrap"><div class="range-bar-fill" style="width:${Math.round((r.count/maxCount)*100)}%"></div></div>
+        <div class="range-val">${r.count}</div>
+      </div>
+    `).join('')}
+  `;
+  
+  // Sum trend chart
+  if (charts.sumTrend) charts.sumTrend.destroy();
+  const last30 = sums.slice(0,30).reverse();
+  charts.sumTrend = new Chart(document.getElementById('sumTrendChart'), {
+    type: 'line',
+    data: {
+      labels: last30.map(s=>s.period.slice(-4)),
+      datasets: [{
+        label: '和值',
+        data: last30.map(s=>s.sum),
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59,130,246,0.1)',
+        tension: 0.3,
+        pointRadius: 3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#64748b', font:{size:9}, maxRotation:45 }, grid: { color: '#1e2d45' } },
+        y: { ticks: { color: '#64748b', font:{size:9} }, grid: { color: '#1e2d45' } }
+      }
+    }
+  });
+  
+  // Sum table
+  document.getElementById('sumTable').innerHTML = sums.slice(0,10).map(s=>{
+    const r = ranges.find(r=>s.sum>=r.min&&s.sum<=r.max);
+    return `<tr>
+      <td class="num-col">${s.period.slice(-3)}期</td>
+      <td style="color:var(--text3)">${s.date}</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:12px">${s.numbers.map(n=>String(n).padStart(2,'0')).join(' ')}</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--gold);font-weight:700">${s.sum}</td>
+      <td style="color:var(--text2)">${r?r.label:'-'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderOddEven(draws) {
+  const dist = computeOddEven(draws);
+  const total = Object.values(dist).reduce((a,b)=>a+b,0);
+  
+  const el = document.getElementById('oddEvenDist');
+  el.innerHTML = Object.entries(dist)
+    .sort((a,b)=>b[1]-a[1])
+    .map(([key, count]) => {
+      const [odd, even] = key.split(':').map(Number);
+      const pct = Math.round((count/total)*100);
+      const oddPct = Math.round((odd/6)*100);
+      return `
+        <div style="margin-bottom:10px">
+          <div class="flex-row" style="justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace">${key}</span>
+            <span style="font-size:11px;color:var(--text3)">${count}次 (${pct}%)</span>
+          </div>
+          <div class="ratio-bar-wrap">
+            <div class="ratio-bar-odd" style="width:${oddPct}%"></div>
+            <div class="ratio-bar-even"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  
+  // Chart
+  if (charts.oddEven) charts.oddEven.destroy();
+  const last30 = draws.slice(0,30).reverse();
+  charts.oddEven = new Chart(document.getElementById('oddEvenChart'), {
+    type: 'bar',
+    data: {
+      labels: last30.map(d=>d.period.slice(-4)),
+      datasets: [
+        {label:'奇數', data: last30.map(d=>d.numbers.filter(n=>n%2!==0).length), backgroundColor:'#3b82f6'},
+        {label:'偶數', data: last30.map(d=>d.numbers.filter(n=>n%2===0).length), backgroundColor:'#f59e0b'}
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { stacked: true, ticks:{color:'#64748b',font:{size:9},maxRotation:45}, grid:{color:'#1e2d45'} },
+        y: { stacked: true, ticks:{color:'#64748b',font:{size:9}}, grid:{color:'#1e2d45'}, max:6 }
+      }
+    }
+  });
+  
+  // Big/Small
+  const bigSmallDist = {'0:6':0,'1:5':0,'2:4':0,'3:3':0,'4:2':0,'5:1':0,'6:0':0};
+  draws.slice(0,50).forEach(d=>{
+    const big = d.numbers.filter(n=>n>=26).length;
+    bigSmallDist[`${big}:${6-big}`]++;
+  });
+  
+  const bsTotal = 50;
+  document.getElementById('bigSmallDist').innerHTML = Object.entries(bigSmallDist)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,5)
+    .map(([key,count])=>{
+      const pct = Math.round((count/bsTotal)*100);
+      const [big] = key.split(':').map(Number);
+      return `<div style="margin-bottom:8px">
+        <div class="flex-row" style="justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:13px;font-family:'JetBrains Mono',monospace">大${big}小${6-big}</span>
+          <span style="font-size:11px;color:var(--text3)">${count}次 (${pct}%)</span>
+        </div>
+        <div class="range-bar-wrap"><div class="range-bar-fill" style="width:${pct}%;background:var(--accent2)"></div></div>
+      </div>`;
+    }).join('');
+  
+  // Recent odd/even
+  document.getElementById('recentOddEven').innerHTML = draws.slice(0,10).map(d=>{
+    const odd = d.numbers.filter(n=>n%2!==0).length;
+    const even = 6-odd;
+    return `<div class="streak-item">
+      <div style="font-size:11px;color:var(--text3);min-width:50px">${d.date.slice(5)}</div>
+      <div style="display:flex;gap:4px;flex:1">${d.numbers.map(n=>`<span style="width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;background:${n%2!==0?'#1e3a6e':'#3d1a00'};color:${n%2!==0?'#93c5fd':'#fcd34d'}">${n}</span>`).join('')}</div>
+      <div style="font-size:12px;font-weight:600;color:var(--accent)">${odd}:${even}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderHeadTail(draws) {
+  const heads = computeHeadDigits(draws);
+  const tails = computeTailDigits(draws);
+  
+  const headTotal = Object.values(heads).reduce((a,b)=>a+b,0);
+  const tailTotal = Object.values(tails).reduce((a,b)=>a+b,0);
+  const maxHead = Math.max(...Object.values(heads));
+  const maxTail = Math.max(...Object.values(tails));
+  
+  // Head grid (0-4)
+  const headColors = ['#64748b','#3b82f6','#8b5cf6','#06b6d4','#f59e0b'];
+  document.getElementById('headGrid').innerHTML = [0,1,2,3,4].map((h,i)=>{
+    const count = heads[h] || 0;
+    const pct = headTotal > 0 ? Math.round((count/headTotal)*100) : 0;
+    const rangeLabel = h===0?'01-09':h===1?'10-19':h===2?'20-29':h===3?'30-39':'40-49';
+    return `<div class="head-item">
+      <div class="head-digit" style="color:${headColors[i]}">${h}X</div>
+      <div style="font-size:10px;color:var(--text3);margin:2px 0">${rangeLabel}</div>
+      <div class="head-pct">${pct}%</div>
+      <div class="head-count">${count}次</div>
+    </div>`;
+  }).join('');
+  
+  // Tail grid (0-9)
+  const tailColors = ['#ef4444','#f97316','#f59e0b','#84cc16','#10b981','#06b6d4','#3b82f6','#8b5cf6','#ec4899','#64748b'];
+  document.getElementById('tailGrid').innerHTML = [0,1,2,3,4,5,6,7,8,9].map((t,i)=>{
+    const count = tails[t] || 0;
+    const pct = tailTotal > 0 ? Math.round((count/tailTotal)*100) : 0;
+    const barW = maxTail > 0 ? Math.round((count/maxTail)*100) : 0;
+    return `<div class="tail-item">
+      <div class="tail-digit" style="color:${tailColors[i]}">X${t}</div>
+      <div class="tail-bar" style="width:${barW}%;background:${tailColors[i]}"></div>
+      <div style="font-size:10px;color:var(--text3)">${count}次</div>
+    </div>`;
+  }).join('');
+  
+  // Head-tail combo table
+  const combos = [];
+  for (let h = 0; h <= 4; h++) {
+    for (let t = 0; t <= 9; t++) {
+      const minN = h === 0 ? 1 : h*10;
+      const maxN = h === 0 ? 9 : Math.min(h*10+9, 49);
+      if (t > maxN % 10 && h === 4) continue;
+      const count = draws.slice(0,100).reduce((acc, d) => {
+        return acc + d.numbers.filter(n => {
+          const dh = n <= 9 ? 0 : Math.floor(n/10);
+          const dt = n % 10;
+          return dh === h && dt === t;
+        }).length;
+      }, 0);
+      if (count > 0) combos.push({ h, t, range: `${String(h*10+t).padStart(2,'0')}`, count });
+    }
+  }
+  combos.sort((a,b)=>b.count-a.count);
+  
+  document.getElementById('headTailTable').innerHTML = combos.slice(0,15).map(c=>{
+    const pct = Math.round((c.count/(100*6))*100);
+    return `<tr>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--accent)">${c.h}X</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:var(--accent3)">X${c.t}</td>
+      <td style="color:var(--text3)">${String(c.h*10+c.t).padStart(2,'0')}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700">${c.count}</td>
+      <td style="color:var(--text2)">${pct}%</td>
+    </tr>`;
+  }).join('');
+}
+
+let currentSuggestions = null;
+
+function renderSuggestions(freq, missing) {
+  currentSuggestions = { freq, missing };
+  const sets = generateSuggestions(freq, missing);
+
+  const six  = sets.filter(s => s.type === 6);
+  const seven = sets.filter(s => s.type === 7);
+
+  function ballsHTML(nums, special, type) {
+    const ballSize = type === 7 ? '34px' : '38px';
+    const fontSize = type === 7 ? '13px' : '14px';
+    const normalStyle = `width:${ballSize};height:${ballSize};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${fontSize};font-weight:700;font-family:'JetBrains Mono',monospace;background:linear-gradient(135deg,#1e3a6e,#2563eb);color:white;box-shadow:0 3px 8px rgba(37,99,235,0.3);flex-shrink:0;`;
+    const specialStyle = `width:${ballSize};height:${ballSize};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${fontSize};font-weight:700;font-family:'JetBrains Mono',monospace;background:linear-gradient(135deg,#7c1d2e,#dc2626);color:white;box-shadow:0 3px 8px rgba(220,38,38,0.3);flex-shrink:0;`;
+    return `
+      ${nums.map(n=>`<div style="${normalStyle}">${String(n).padStart(2,'0')}</div>`).join('')}
+      <div style="font-size:16px;color:var(--text3);padding:0 2px">+</div>
+      <div style="${specialStyle}">${String(special).padStart(2,'0')}</div>
+    `;
+  }
+
+  const sixHTML = six.map(s => `
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="min-width:36px;text-align:center">
+        <div style="font-size:15px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent)">組${s.label}</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:1px">6碼</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex:1">${ballsHTML(s.nums, s.special, 6)}</div>
+      <div style="text-align:right;min-width:80px">
+        <div style="font-size:11px;color:var(--gold);font-weight:600">${s.strategy}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">和值 ${s.nums.reduce((a,b)=>a+b,0)}</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:1px">${s.desc}</div>
+      </div>
+    </div>
+  `).join('');
+
+  const sevenHTML = seven.map(s => `
+    <div style="background:linear-gradient(135deg,rgba(245,158,11,0.06),rgba(139,92,246,0.06));border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="min-width:36px;text-align:center">
+        <div style="font-size:15px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--gold)">組${s.label}</div>
+        <div style="font-size:9px;color:var(--gold);margin-top:1px;opacity:0.7">7碼</div>
+      </div>
+      <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;flex:1">${ballsHTML(s.nums, s.special, 7)}</div>
+      <div style="text-align:right;min-width:80px">
+        <div style="font-size:11px;color:var(--gold);font-weight:600">${s.strategy}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">包含 ${(() => { const c = s.nums.length; let r=1; for(let i=c;i>c-6;i--) r*=i; for(let i=1;i<=6;i++) r/=i; return Math.round(r); })()} 組6碼</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:1px">${s.desc}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('suggestSets').innerHTML = `
+    <div style="margin-bottom:20px">
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+        <span style="background:var(--accent);color:white;font-size:10px;padding:2px 8px;border-radius:10px">6碼</span>
+        共 10 組（每組1注，每注50元）
+      </div>
+      ${sixHTML}
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+        <span style="background:var(--gold);color:#1a0d00;font-size:10px;padding:2px 8px;border-radius:10px">7碼</span>
+        共 2 組（7碼包牌 = 7注，每組350元）
+      </div>
+      ${sevenHTML}
+    </div>
+  `;
+}
+
+function generateNewSets() {
+  if (!currentSuggestions) return;
+  renderSuggestions(currentSuggestions.freq, currentSuggestions.missing);
+}
+
+function renderHistory() {
+  const count = +document.getElementById('historyCount').value;
+  const list = document.getElementById('historyList');
+  
+  list.innerHTML = allDraws.slice(0, count).map(d => `
+    <div class="history-item">
+      <div>
+        <div class="history-period">${d.period}</div>
+        <div class="history-date">${d.date}</div>
+      </div>
+      <div class="history-balls">
+        ${d.numbers.map(n=>`<div class="small-ball small-ball-n">${String(n).padStart(2,'0')}</div>`).join('')}
+        <div style="color:var(--text3);font-size:12px;padding:0 4px">+</div>
+        <div class="small-ball small-ball-s">${String(d.special).padStart(2,'0')}</div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-left:auto">${d.jackpot}</div>
+    </div>
+  `).join('');
+}
+
+// =============================================
+// TABS
+// =============================================
+
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  
+  const el = document.getElementById(`tab-${name}`);
+  if (el) el.style.display = 'block';
+  
+  const tabs = document.querySelectorAll('.tab');
+  const tabMap = {freq:0, missing:1, streak:2, gap:3, sum:4, oddeven:5, headtail:6, suggest:7};
+  if (tabs[tabMap[name]]) tabs[tabMap[name]].classList.add('active');
+  
+  // Trigger chart render if needed
+  if (name === 'gap' && allDraws.length) {
+    setTimeout(() => {
+      const zones = computeGapAnalysis(allDraws);
+      renderGapAnalysis(zones, allDraws);
+    }, 50);
+  }
+}
+
+// =============================================
+// FETCH LATEST DRAWS - 抓取最新開獎資料
+// =============================================
+
+// 解析號碼字串 "01,02,03,04,05,06" 或 "01、02、03"
+function parseNumStr(str) {
+  return str.split(/[,、\s]+/).map(s => parseInt(s.trim(), 10)).filter(n => n >= 1 && n <= 49);
+}
+
+// 嘗試從 allorigins 包裝的 HTML 內找大樂透開獎資料
+function parseHTMLForDraws(html) {
+  const results = [];
+  // 匹配 "第XXXXXX期" + 號碼模式 (多種格式都試)
+  // 格式1: 期數+日期+號碼+特別號 (台彩官網表格格式)
+  const patterns = [
+    // 格式：115045 / 2026/04/17 / 07 10 11 22 40 45 / 18
+    /(\d{6})[^\d]*(\d{4}[\/\-]\d{2}[\/\-]\d{2})[^\d]+((?:\d{1,2}[\s,、]+){5}\d{1,2})[^\d]+(\d{1,2})/g,
+    // 格式：中獎號碼為xx、xx、xx、xx、xx、xx，特別號xx
+    /第(\d{6})期[^。]*?(\d{4}[\/年]\d{1,2}[\/月]\d{1,2})[^。]*?中獎號碼[為是：:]\s*((?:\d{1,2}[、，,\s]+){5}\d{1,2})[^。]*?特別號[：:為]?\s*(\d{1,2})/g,
+    // 格式：drawTerm + 號碼 (JSON 格式)
+  ];
+
+  // 嘗試 JSON 格式解析
+  try {
+    // allorigins 包一層: { contents: "...", status: {...} }
+    const jsonStart = html.indexOf('{');
+    if (jsonStart !== -1) {
+      const jsonStr = html.slice(jsonStart);
+      const obj = JSON.parse(jsonStr);
+      const inner = obj.contents || obj.content || '';
+      // 嘗試再解析 inner 為 JSON
+      try {
+        const inner2 = JSON.parse(inner);
+        const list = inner2.lottoRes || inner2.content || inner2.data || inner2.result ||
+                     inner2.lotteryResult || inner2.list || [];
+        if (Array.isArray(list) && list.length > 0) {
+          list.forEach(item => {
+            // 支援多種欄位名稱
+            const term = item.drawTerm || item.term || item.period || item.lotteryId || '';
+            if (!term || !/^\d{6}$/.test(String(term))) return;
+            const no1 = parseInt(item.no1 || item.n1 || item.num1 || 0);
+            const no2 = parseInt(item.no2 || item.n2 || item.num2 || 0);
+            const no3 = parseInt(item.no3 || item.n3 || item.num3 || 0);
+            const no4 = parseInt(item.no4 || item.n4 || item.num4 || 0);
+            const no5 = parseInt(item.no5 || item.n5 || item.num5 || 0);
+            const no6 = parseInt(item.no6 || item.n6 || item.num6 || 0);
+            const sp  = parseInt(item.superNo || item.specialNo || item.bonus || item.sp || 0);
+            const nums = [no1,no2,no3,no4,no5,no6].filter(n=>n>=1&&n<=49).sort((a,b)=>a-b);
+            if (nums.length !== 6 || !sp) return;
+            const dateRaw = item.drawDate || item.date || item.openDate || '';
+            const dateStr = dateRaw.replace(/\//g,'-').replace(/年/g,'-').replace(/月/g,'-').replace(/日/g,'').slice(0,10);
+            const jackpot = (item.prize1 > 0) ? `${(item.prize1/1e8).toFixed(1)}億` : '無人中獎';
+            results.push({ period:`第${term}期`, date:dateStr, numbers:nums, special:sp, jackpot });
+          });
+          if (results.length > 0) return results;
+        }
+      } catch(e2) {}
+
+      // 嘗試從 HTML 字串裡用 regex 提取
+      const htmlContent = inner || html;
+      return parseHTMLText(htmlContent);
+    }
+  } catch(e) {}
+
+  return parseHTMLText(html);
+}
+
+// 從 HTML 文字內容用正則提取開獎資料
+function parseHTMLText(html) {
+  const results = [];
+  const seen = new Set();
+
+  // 移除 HTML 標籤，保留文字
+  const text = html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&');
+
+  // 匹配各種格式
+  const regexes = [
+    // 格式1: 第115045期...中獎號碼為07、10、11、22、40、45，特別號18
+    /第(\d{6})期[\s\S]{0,200}?中獎號碼[為是：:\s]*((?:\d{1,2}[、，,\s]+){5}\d{1,2})[\s\S]{0,50}?特別號[：:\s]*(\d{1,2})/g,
+    // 格式2: 115045 2026-04-17 07 10 11 22 40 45 18
+    /\b(1150\d{2})\b[\s\/\-]+(\d{4}[\/-]\d{2}[\/-]\d{2})[\s]+((?:\d{1,2}\s+){5}\d{1,2})[\s]+(\d{1,2})\b/g,
+    // 格式3: drawTerm:"115045"...superNo:"18"
+    /"drawTerm"\s*:\s*"(\d{6})"[\s\S]{0,300}?"superNo"\s*:\s*"(\d{1,2})"/g,
+  ];
+
+  const r1 = /第(\d{6})期[\s\S]{0,300}?中獎號碼[為是：:\s]*([\d、，,\s]{10,30})[\s\S]{0,80}?特別號[：:\s]*(\d{1,2})/g;
+  let m;
+  while ((m = r1.exec(text)) !== null) {
+    const term = m[1];
+    if (seen.has(term)) continue;
+    const nums = parseNumStr(m[2]).filter(n=>n>=1&&n<=49).sort((a,b)=>a-b);
+    const sp = parseInt(m[3]);
+    if (nums.length !== 6 || !sp || sp<1 || sp>49) continue;
+    // 嘗試抓日期（在前後200字內找 yyyy-mm-dd 或 yyyy/mm/dd）
+    const nearby = text.slice(Math.max(0, m.index-100), m.index+300);
+    const dateM = nearby.match(/(\d{4})[\/\-年](\d{1,2})[\/\-月](\d{1,2})/);
+    const dateStr = dateM ? `${dateM[1]}-${dateM[2].padStart(2,'0')}-${dateM[3].padStart(2,'0')}` : '';
+    seen.add(term);
+    results.push({ period:`第${term}期`, date:dateStr, numbers:nums, special:sp, jackpot:'無人中獎' });
+  }
+
+  return results;
+}
+
+async function fetchLatestDraws() {
+  const targets = [
+    // 方法1: 台彩官方 JSON API (大樂透 = gameCode 6)
+    {
+      url: 'https://www.taiwanlottery.com/lotto/result/getLottoRes.do?gameCode=6&rows=30',
+      type: 'json'
+    },
+    // 方法2: 台彩官方 JSON API (大樂透另一個 gameCode)
+    {
+      url: 'https://www.taiwanlottery.com/lotto/result/getLottoRes.do?gameCode=3&rowsPerPage=30&pageNum=1',
+      type: 'json'
+    },
+    // 方法3: 台彩開獎查詢頁
+    {
+      url: 'https://www.taiwanlottery.com/lotto/result/lotto649',
+      type: 'html'
+    },
+    // 方法4: 彩票資訊網
+    {
+      url: 'https://atsunny.tw/lotto-649/',
+      type: 'html'
+    },
+  ];
+
+  // 使用 allorigins (最穩定的 CORS proxy，回傳 JSON 包裝)
+  const PROXY = 'https://api.allorigins.win/get?url=';
+
+  for (const target of targets) {
+    try {
+      const proxyUrl = PROXY + encodeURIComponent(target.url);
+      const res = await Promise.race([
+        fetch(proxyUrl),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))
+      ]);
+      if (!res.ok) continue;
+      const wrapper = await res.json();
+      const content = wrapper.contents || '';
+      if (!content) continue;
+
+      let draws = [];
+      if (target.type === 'json') {
+        try {
+          const data = JSON.parse(content);
+          const list = data.lottoRes || data.content || data.data || data.result || data.list || [];
+          if (Array.isArray(list) && list.length > 0) {
+            list.forEach(item => {
+              const term = String(item.drawTerm || item.term || '');
+              if (!/^\d{6}$/.test(term)) return;
+              const nums = [item.no1,item.no2,item.no3,item.no4,item.no5,item.no6]
+                .map(Number).filter(n=>n>=1&&n<=49).sort((a,b)=>a-b);
+              const sp = Number(item.superNo || item.bonus || 0);
+              if (nums.length!==6 || !sp) return;
+              const dateRaw = String(item.drawDate||item.date||'');
+              const dateStr = dateRaw.replace(/\//g,'-').slice(0,10);
+              const jackpot = Number(item.prize1)>0 ? `${(item.prize1/1e8).toFixed(1)}億` : '無人中獎';
+              draws.push({ period:`第${term}期`, date:dateStr, numbers:nums, special:sp, jackpot });
+            });
+          }
+        } catch(e) {
+          // JSON 解析失敗，改用 HTML 解析
+          draws = parseHTMLForDraws(content);
+        }
+      } else {
+        draws = parseHTMLForDraws(content);
+      }
+
+      if (draws.length > 0) {
+        console.log(`✅ 成功從 ${target.url} 取得 ${draws.length} 筆資料`);
+        return draws;
+      }
+    } catch(e) {
+      console.warn(`❌ 無法從 ${target.url} 取得資料:`, e.message);
+      continue;
+    }
+  }
+
+  return [];
+}
+
+// 合併新資料到現有資料（去重、保持最新在前）
+function mergeDraws(base, newDraws) {
+  const existing = new Set(base.map(d => d.period));
+  const toAdd = newDraws.filter(d => !existing.has(d.period));
+  if (toAdd.length === 0) return { draws: base, added: 0 };
+  const merged = [...toAdd, ...base].sort((a,b) => new Date(b.date) - new Date(a.date));
+  return { draws: merged, added: toAdd.length };
+}
+
+// 更新所有統計並重新渲染
+function reRenderAll() {
+  const freq    = computeFrequency(allDraws, allDraws.length);
+  const missing = computeMissing(allDraws);
+  const maxMiss = computeHistoricMaxMissing(allDraws);
+  const streaks = computeStreaks(allDraws);
+  const zones   = computeGapAnalysis(allDraws);
+
+  renderLatestDraw(allDraws[0]);
+  renderDrawStats(allDraws[0], allDraws);
+  renderFrequency(freq);
+  renderMissing(missing, maxMiss);
+  renderStreaks(streaks);
+  renderGapAnalysis(zones, allDraws);
+  renderSumAnalysis(allDraws);
+  renderOddEven(allDraws);
+  renderHeadTail(allDraws);
+  renderSuggestions(freq, missing);
+  renderHistory();
+
+  const lastDraw = allDraws[allDraws.length - 1];
+  document.getElementById('statusText').textContent =
+    `真實資料 ${lastDraw.date} ～ ${allDraws[0].date}，共 ${allDraws.length} 期`;
+
+  // 更新 alert 說明
+  const newest = allDraws[0];
+  const oldest = allDraws[allDraws.length-1];
+  document.getElementById('dataAlert').textContent =
+    `⚠️ 本系統資料來源：台灣彩券官網（第${oldest.period}～${newest.period}，${oldest.date}～${newest.date}），統計數據僅供參考，彩票開獎屬機率事件，請理性購買。`;
+}
+
+// =============================================
+// 手動/自動重新整理
+// =============================================
+let isRefreshing = false;
+
+async function refreshData() {
+  if (isRefreshing) return;
+  isRefreshing = true;
+
+  const btn   = document.getElementById('refreshBtn');
+  const icon  = document.getElementById('refreshIcon');
+  const label = document.getElementById('refreshLabel');
+  const dot   = document.getElementById('statusDot');
+  const st    = document.getElementById('statusText');
+
+  icon.style.animation = 'spin 0.8s linear infinite';
+  if (label) label.textContent = '更新中...';
+  btn.style.opacity    = '0.6';
+  btn.style.cursor     = 'not-allowed';
+  dot.style.background = '#f59e0b';
+  st.textContent       = '連線中...';
+
+  try {
+    const newDraws = await fetchLatestDraws();
+
+    if (newDraws.length > 0) {
+      const { draws, added } = mergeDraws(allDraws, newDraws);
+      allDraws = draws;
+      dot.style.background = '#10b981';
+      if (added > 0) {
+        reRenderAll();
+        showToast(`🎉 成功更新！新增 ${added} 期最新開獎號碼`, 'success');
+      } else {
+        st.textContent = `✅ 資料已是最新（共 ${allDraws.length} 期）`;
+        showToast('✅ 目前資料已是最新，無新期數', 'info');
+      }
+    } else {
+      dot.style.background = '#f59e0b';
+      st.textContent = '⚠️ 自動抓取失敗，可手動輸入';
+      showToast('⚠️ 無法自動取得，請使用「✏️ 手動輸入」新增最新期數', 'warn');
+      setTimeout(() => showManualInput(), 600);
+    }
+  } catch(e) {
+    dot.style.background = '#f59e0b';
+    st.textContent = '⚠️ 更新失敗，可手動輸入';
+    setTimeout(() => showManualInput(), 500);
+  } finally {
+    setTimeout(() => {
+      icon.style.animation = '';
+      if (label) label.textContent = '更新資料';
+      btn.style.opacity    = '1';
+      btn.style.cursor     = 'pointer';
+      isRefreshing = false;
+    }, 1500);
+  }
+}
+
+// 手動輸入開獎號碼彈窗
+function showManualInput() {
+  const existing = document.getElementById('manualInputModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'manualInputModal';
+  modal.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99998;
+    display:flex;align-items:center;justify-content:center;padding:16px;
+    font-family:'Noto Sans TC',sans-serif;
+  `;
+  modal.innerHTML = `
+    <div style="background:#141d2e;border:1px solid #1e2d45;border-radius:16px;padding:28px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+      <div style="font-size:16px;font-weight:700;color:#e2e8f0;margin-bottom:6px">📝 手動輸入最新開獎號碼</div>
+      <div style="font-size:12px;color:#64748b;margin-bottom:20px">請至<a href="https://www.taiwanlottery.com/lotto/result/lotto649" target="_blank" style="color:#60a5fa">台灣彩券官網</a>查詢最新期號後填入</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label style="font-size:11px;color:#94a3b8;display:block;margin-bottom:4px">期數（如 115046）</label>
+          <input id="mi_period" placeholder="115046" style="width:100%;padding:8px 12px;background:#1a2035;border:1px solid #1e2d45;border-radius:8px;color:#e2e8f0;font-size:14px;outline:none;font-family:'JetBrains Mono',monospace">
+        </div>
+        <div>
+          <label style="font-size:11px;color:#94a3b8;display:block;margin-bottom:4px">開獎日期</label>
+          <input id="mi_date" type="date" style="width:100%;padding:8px 12px;background:#1a2035;border:1px solid #1e2d45;border-radius:8px;color:#e2e8f0;font-size:14px;outline:none">
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:#94a3b8;display:block;margin-bottom:4px">6個號碼（空格或逗號分隔，如 07 10 11 22 40 45）</label>
+        <input id="mi_nums" placeholder="07 10 11 22 40 45" style="width:100%;padding:8px 12px;background:#1a2035;border:1px solid #1e2d45;border-radius:8px;color:#e2e8f0;font-size:14px;outline:none;font-family:'JetBrains Mono',monospace">
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label style="font-size:11px;color:#94a3b8;display:block;margin-bottom:4px">特別號</label>
+        <input id="mi_special" placeholder="18" style="width:100%;padding:8px 12px;background:#1a2035;border:1px solid #1e2d45;border-radius:8px;color:#e2e8f0;font-size:14px;outline:none;font-family:'JetBrains Mono',monospace">
+      </div>
+
+      <div id="mi_error" style="color:#ef4444;font-size:12px;margin-bottom:12px;display:none"></div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button onclick="document.getElementById('manualInputModal').remove()" style="padding:8px 18px;background:transparent;border:1px solid #1e2d45;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:13px">取消</button>
+        <button onclick="submitManualInput()" style="padding:8px 20px;background:#3b82f6;border:none;border-radius:8px;color:white;cursor:pointer;font-size:13px;font-weight:600">確認新增</button>
+      </div>
+    </div>
+  `;
+  // 設定預設日期為今天
+  document.body.appendChild(modal);
+  document.getElementById('mi_date').value = new Date().toISOString().split('T')[0];
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.getElementById('mi_period').focus();
+}
+
+function submitManualInput() {
+  const errEl  = document.getElementById('mi_error');
+  const period = document.getElementById('mi_period').value.trim();
+  const date   = document.getElementById('mi_date').value.trim();
+  const numsRaw= document.getElementById('mi_nums').value.trim();
+  const spRaw  = document.getElementById('mi_special').value.trim();
+
+  const showErr = msg => { errEl.textContent = msg; errEl.style.display = 'block'; };
+
+  if (!/^\d{6}$/.test(period)) return showErr('❌ 期數格式錯誤，請輸入6位數字（如 115046）');
+  if (!date) return showErr('❌ 請選擇開獎日期');
+  const nums = numsRaw.split(/[\s,、]+/).map(Number).filter(n=>n>=1&&n<=49);
+  if (nums.length !== 6) return showErr('❌ 請輸入6個正確號碼（1-49之間）');
+  const sp = Number(spRaw);
+  if (!sp || sp < 1 || sp > 49) return showErr('❌ 特別號格式錯誤（1-49之間）');
+  if (nums.includes(sp)) return showErr('❌ 特別號不能與主號碼重複');
+
+  const newDraw = {
+    period: `第${period}期`,
+    date: date,
+    numbers: nums.sort((a,b)=>a-b),
+    special: sp,
+    jackpot: '無人中獎'
+  };
+
+  const { draws, added } = mergeDraws(allDraws, [newDraw]);
+  allDraws = draws;
+  document.getElementById('manualInputModal').remove();
+
+  if (added > 0) {
+    reRenderAll();
+    showToast(`✅ 成功新增第${period}期開獎號碼！`, 'success');
+    document.getElementById('statusDot').style.background = '#10b981';
+  } else {
+    showToast(`ℹ️ 第${period}期資料已存在，無需新增`, 'info');
+  }
+}
+
+// Toast 通知
+function showToast(msg, type='info') {
+  const existing = document.getElementById('lotto-toast');
+  if (existing) existing.remove();
+  const colors = { success:'#10b981', warn:'#f59e0b', info:'#3b82f6', error:'#ef4444' };
+  const toast = document.createElement('div');
+  toast.id = 'lotto-toast';
+  toast.textContent = msg;
+  toast.style.cssText = `
+    position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+    background:${colors[type]||colors.info}; color:white;
+    padding:10px 22px; border-radius:24px; font-size:13px; font-weight:500;
+    box-shadow:0 4px 20px rgba(0,0,0,0.35); z-index:99999;
+    animation:fadeInUp 0.3s ease; white-space:nowrap;
+    font-family:'Noto Sans TC',sans-serif;
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity='0'; toast.style.transition='opacity 0.4s'; setTimeout(()=>toast.remove(), 400); }, 3500);
+}
+
+// =============================================
+// INIT
+// =============================================
+
+async function init() {
+  document.getElementById('statusDot').style.background = '#f59e0b';
+  document.getElementById('statusText').textContent = '載入中...';
+
+  // 從 draws.json 載入（GitHub Actions 自動更新）
+  const { draws, updatedAt, fromJson } = await loadDrawsFromJson();
+  allDraws = draws;
+
+  const freq    = computeFrequency(allDraws, allDraws.length);
+  const missing = computeMissing(allDraws);
+  const maxMiss = computeHistoricMaxMissing(allDraws);
+  const streaks = computeStreaks(allDraws);
+  const zones   = computeGapAnalysis(allDraws);
+
+  renderLatestDraw(allDraws[0]);
+  renderDrawStats(allDraws[0], allDraws);
+  renderFrequency(freq);
+  renderMissing(missing, maxMiss);
+  renderStreaks(streaks);
+  renderGapAnalysis(zones, allDraws);
+  renderSumAnalysis(allDraws);
+  renderOddEven(allDraws);
+  renderHeadTail(allDraws);
+  renderSuggestions(freq, missing);
+  renderHistory();
+
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('mainContent').style.display  = 'block';
+
+  document.getElementById('statusDot').style.background = '#10b981';
+  const ld = allDraws[allDraws.length - 1];
+  const updInfo = updatedAt ? ` · 更新 ${updatedAt.slice(0,10)}` : '';
+  document.getElementById('statusText').textContent =
+    `${ld.date}～${allDraws[0].date} 共${allDraws.length}期${updInfo}`;
+
+  // 更新 alert
+  const newest = allDraws[0];
+  const oldest = allDraws[allDraws.length-1];
+  document.getElementById('dataAlert').textContent =
+    `⚠️ 資料來源：台灣彩券官網（${oldest.period}～${newest.period}，${oldest.date}～${newest.date}）` +
+    (fromJson ? '，由 GitHub Actions 自動更新' : '，使用內建備用資料') +
+    '。統計僅供參考，彩票屬機率事件，請理性購買。';
+}
+
+init();
+</script>
+</body>
+</html>
