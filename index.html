@@ -2005,190 +2005,10 @@ function showTab(name) {
   }
 }
 
+
 // =============================================
-// FETCH LATEST DRAWS - 抓取最新開獎資料
+// MERGE & RE-RENDER HELPERS
 // =============================================
-
-// 解析號碼字串 "01,02,03,04,05,06" 或 "01、02、03"
-function parseNumStr(str) {
-  return str.split(/[,、\s]+/).map(s => parseInt(s.trim(), 10)).filter(n => n >= 1 && n <= 49);
-}
-
-// 嘗試從 allorigins 包裝的 HTML 內找大樂透開獎資料
-function parseHTMLForDraws(html) {
-  const results = [];
-  // 匹配 "第XXXXXX期" + 號碼模式 (多種格式都試)
-  // 格式1: 期數+日期+號碼+特別號 (台彩官網表格格式)
-  const patterns = [
-    // 格式：115045 / 2026/04/17 / 07 10 11 22 40 45 / 18
-    /(\d{6})[^\d]*(\d{4}[\/\-]\d{2}[\/\-]\d{2})[^\d]+((?:\d{1,2}[\s,、]+){5}\d{1,2})[^\d]+(\d{1,2})/g,
-    // 格式：中獎號碼為xx、xx、xx、xx、xx、xx，特別號xx
-    /第(\d{6})期[^。]*?(\d{4}[\/年]\d{1,2}[\/月]\d{1,2})[^。]*?中獎號碼[為是：:]\s*((?:\d{1,2}[、，,\s]+){5}\d{1,2})[^。]*?特別號[：:為]?\s*(\d{1,2})/g,
-    // 格式：drawTerm + 號碼 (JSON 格式)
-  ];
-
-  // 嘗試 JSON 格式解析
-  try {
-    // allorigins 包一層: { contents: "...", status: {...} }
-    const jsonStart = html.indexOf('{');
-    if (jsonStart !== -1) {
-      const jsonStr = html.slice(jsonStart);
-      const obj = JSON.parse(jsonStr);
-      const inner = obj.contents || obj.content || '';
-      // 嘗試再解析 inner 為 JSON
-      try {
-        const inner2 = JSON.parse(inner);
-        const list = inner2.lottoRes || inner2.content || inner2.data || inner2.result ||
-                     inner2.lotteryResult || inner2.list || [];
-        if (Array.isArray(list) && list.length > 0) {
-          list.forEach(item => {
-            // 支援多種欄位名稱
-            const term = item.drawTerm || item.term || item.period || item.lotteryId || '';
-            if (!term || !/^\d{6}$/.test(String(term))) return;
-            const no1 = parseInt(item.no1 || item.n1 || item.num1 || 0);
-            const no2 = parseInt(item.no2 || item.n2 || item.num2 || 0);
-            const no3 = parseInt(item.no3 || item.n3 || item.num3 || 0);
-            const no4 = parseInt(item.no4 || item.n4 || item.num4 || 0);
-            const no5 = parseInt(item.no5 || item.n5 || item.num5 || 0);
-            const no6 = parseInt(item.no6 || item.n6 || item.num6 || 0);
-            const sp  = parseInt(item.superNo || item.specialNo || item.bonus || item.sp || 0);
-            const nums = [no1,no2,no3,no4,no5,no6].filter(n=>n>=1&&n<=49).sort((a,b)=>a-b);
-            if (nums.length !== 6 || !sp) return;
-            const dateRaw = item.drawDate || item.date || item.openDate || '';
-            const dateStr = dateRaw.replace(/\//g,'-').replace(/年/g,'-').replace(/月/g,'-').replace(/日/g,'').slice(0,10);
-            const jackpot = (item.prize1 > 0) ? `${(item.prize1/1e8).toFixed(1)}億` : '無人中獎';
-            results.push({ period:`第${term}期`, date:dateStr, numbers:nums, special:sp, jackpot });
-          });
-          if (results.length > 0) return results;
-        }
-      } catch(e2) {}
-
-      // 嘗試從 HTML 字串裡用 regex 提取
-      const htmlContent = inner || html;
-      return parseHTMLText(htmlContent);
-    }
-  } catch(e) {}
-
-  return parseHTMLText(html);
-}
-
-// 從 HTML 文字內容用正則提取開獎資料
-function parseHTMLText(html) {
-  const results = [];
-  const seen = new Set();
-
-  // 移除 HTML 標籤，保留文字
-  const text = html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&');
-
-  // 匹配各種格式
-  const regexes = [
-    // 格式1: 第115045期...中獎號碼為07、10、11、22、40、45，特別號18
-    /第(\d{6})期[\s\S]{0,200}?中獎號碼[為是：:\s]*((?:\d{1,2}[、，,\s]+){5}\d{1,2})[\s\S]{0,50}?特別號[：:\s]*(\d{1,2})/g,
-    // 格式2: 115045 2026-04-17 07 10 11 22 40 45 18
-    /\b(1150\d{2})\b[\s\/\-]+(\d{4}[\/-]\d{2}[\/-]\d{2})[\s]+((?:\d{1,2}\s+){5}\d{1,2})[\s]+(\d{1,2})\b/g,
-    // 格式3: drawTerm:"115045"...superNo:"18"
-    /"drawTerm"\s*:\s*"(\d{6})"[\s\S]{0,300}?"superNo"\s*:\s*"(\d{1,2})"/g,
-  ];
-
-  const r1 = /第(\d{6})期[\s\S]{0,300}?中獎號碼[為是：:\s]*([\d、，,\s]{10,30})[\s\S]{0,80}?特別號[：:\s]*(\d{1,2})/g;
-  let m;
-  while ((m = r1.exec(text)) !== null) {
-    const term = m[1];
-    if (seen.has(term)) continue;
-    const nums = parseNumStr(m[2]).filter(n=>n>=1&&n<=49).sort((a,b)=>a-b);
-    const sp = parseInt(m[3]);
-    if (nums.length !== 6 || !sp || sp<1 || sp>49) continue;
-    // 嘗試抓日期（在前後200字內找 yyyy-mm-dd 或 yyyy/mm/dd）
-    const nearby = text.slice(Math.max(0, m.index-100), m.index+300);
-    const dateM = nearby.match(/(\d{4})[\/\-年](\d{1,2})[\/\-月](\d{1,2})/);
-    const dateStr = dateM ? `${dateM[1]}-${dateM[2].padStart(2,'0')}-${dateM[3].padStart(2,'0')}` : '';
-    seen.add(term);
-    results.push({ period:`第${term}期`, date:dateStr, numbers:nums, special:sp, jackpot:'無人中獎' });
-  }
-
-  return results;
-}
-
-async function fetchLatestDraws() {
-  const targets = [
-    // 方法1: 台彩官方 JSON API (大樂透 = gameCode 6)
-    {
-      url: 'https://www.taiwanlottery.com/lotto/result/getLottoRes.do?gameCode=6&rows=30',
-      type: 'json'
-    },
-    // 方法2: 台彩官方 JSON API (大樂透另一個 gameCode)
-    {
-      url: 'https://www.taiwanlottery.com/lotto/result/getLottoRes.do?gameCode=3&rowsPerPage=30&pageNum=1',
-      type: 'json'
-    },
-    // 方法3: 台彩開獎查詢頁
-    {
-      url: 'https://www.taiwanlottery.com/lotto/result/lotto649',
-      type: 'html'
-    },
-    // 方法4: 彩票資訊網
-    {
-      url: 'https://atsunny.tw/lotto-649/',
-      type: 'html'
-    },
-  ];
-
-  // 使用 allorigins (最穩定的 CORS proxy，回傳 JSON 包裝)
-  const PROXY = 'https://api.allorigins.win/get?url=';
-
-  for (const target of targets) {
-    try {
-      const proxyUrl = PROXY + encodeURIComponent(target.url);
-      const res = await Promise.race([
-        fetch(proxyUrl),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))
-      ]);
-      if (!res.ok) continue;
-      const wrapper = await res.json();
-      const content = wrapper.contents || '';
-      if (!content) continue;
-
-      let draws = [];
-      if (target.type === 'json') {
-        try {
-          const data = JSON.parse(content);
-          const list = data.lottoRes || data.content || data.data || data.result || data.list || [];
-          if (Array.isArray(list) && list.length > 0) {
-            list.forEach(item => {
-              const term = String(item.drawTerm || item.term || '');
-              if (!/^\d{6}$/.test(term)) return;
-              const nums = [item.no1,item.no2,item.no3,item.no4,item.no5,item.no6]
-                .map(Number).filter(n=>n>=1&&n<=49).sort((a,b)=>a-b);
-              const sp = Number(item.superNo || item.bonus || 0);
-              if (nums.length!==6 || !sp) return;
-              const dateRaw = String(item.drawDate||item.date||'');
-              const dateStr = dateRaw.replace(/\//g,'-').slice(0,10);
-              const jackpot = Number(item.prize1)>0 ? `${(item.prize1/1e8).toFixed(1)}億` : '無人中獎';
-              draws.push({ period:`第${term}期`, date:dateStr, numbers:nums, special:sp, jackpot });
-            });
-          }
-        } catch(e) {
-          // JSON 解析失敗，改用 HTML 解析
-          draws = parseHTMLForDraws(content);
-        }
-      } else {
-        draws = parseHTMLForDraws(content);
-      }
-
-      if (draws.length > 0) {
-        console.log(`✅ 成功從 ${target.url} 取得 ${draws.length} 筆資料`);
-        return draws;
-      }
-    } catch(e) {
-      console.warn(`❌ 無法從 ${target.url} 取得資料:`, e.message);
-      continue;
-    }
-  }
-
-  return [];
-}
-
-// 合併新資料到現有資料（去重、保持最新在前）
 function mergeDraws(base, newDraws) {
   const existing = new Set(base.map(d => d.period));
   const toAdd = newDraws.filter(d => !existing.has(d.period));
@@ -2229,7 +2049,7 @@ function reRenderAll() {
 }
 
 // =============================================
-// 手動/自動重新整理
+// 重新整理：重載 draws.json
 // =============================================
 let isRefreshing = false;
 
@@ -2237,51 +2057,57 @@ async function refreshData() {
   if (isRefreshing) return;
   isRefreshing = true;
 
-  const btn   = document.getElementById('refreshBtn');
-  const icon  = document.getElementById('refreshIcon');
-  const label = document.getElementById('refreshLabel');
-  const dot   = document.getElementById('statusDot');
-  const st    = document.getElementById('statusText');
+  const btn  = document.getElementById('refreshBtn');
+  const icon = document.getElementById('refreshIcon');
+  const label= document.getElementById('refreshLabel');
+  const dot  = document.getElementById('statusDot');
+  const st   = document.getElementById('statusText');
 
   icon.style.animation = 'spin 0.8s linear infinite';
   if (label) label.textContent = '更新中...';
-  btn.style.opacity    = '0.6';
-  btn.style.cursor     = 'not-allowed';
+  btn.style.opacity = '0.6';
+  btn.style.cursor  = 'not-allowed';
   dot.style.background = '#f59e0b';
-  st.textContent       = '連線中...';
+  st.textContent = '重新讀取資料中...';
 
   try {
-    const newDraws = await fetchLatestDraws();
+    // 直接重新抓 draws.json（同源，不會有 CORS，加 timestamp 避免 cache）
+    const res = await Promise.race([
+      fetch('./draws.json?t=' + Date.now(), { cache: 'no-cache' }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000))
+    ]);
 
-    if (newDraws.length > 0) {
-      const { draws, added } = mergeDraws(allDraws, newDraws);
-      allDraws = draws;
-      dot.style.background = '#10b981';
-      if (added > 0) {
-        reRenderAll();
-        showToast(`🎉 成功更新！新增 ${added} 期最新開獎號碼`, 'success');
-      } else {
-        st.textContent = `✅ 資料已是最新（共 ${allDraws.length} 期）`;
-        showToast('✅ 目前資料已是最新，無新期數', 'info');
-      }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data.draws) || data.draws.length === 0) throw new Error('資料為空');
+
+    const { draws, added } = mergeDraws(allDraws, data.draws);
+    allDraws = draws;
+
+    dot.style.background = '#10b981';
+
+    if (added > 0) {
+      reRenderAll();
+      showToast(`🎉 成功更新！新增 ${added} 期最新開獎號碼`, 'success');
     } else {
-      dot.style.background = '#f59e0b';
-      st.textContent = '⚠️ 自動抓取失敗，可手動輸入';
-      showToast('⚠️ 無法自動取得，請使用「✏️ 手動輸入」新增最新期數', 'warn');
-      setTimeout(() => showManualInput(), 600);
+      const ld = allDraws[allDraws.length-1];
+      st.textContent = `${ld.date}～${allDraws[0].date} 共${allDraws.length}期`;
+      showToast('✅ 已是最新資料，無新期數', 'info');
     }
+
   } catch(e) {
     dot.style.background = '#f59e0b';
-    st.textContent = '⚠️ 更新失敗，可手動輸入';
-    setTimeout(() => showManualInput(), 500);
+    st.textContent = '⚠️ 讀取失敗，請手動輸入';
+    showToast('⚠️ 讀取 draws.json 失敗：' + e.message + '，請用「✏️ 手動輸入」', 'warn');
+    setTimeout(() => showManualInput(), 600);
   } finally {
     setTimeout(() => {
       icon.style.animation = '';
       if (label) label.textContent = '更新資料';
-      btn.style.opacity    = '1';
-      btn.style.cursor     = 'pointer';
+      btn.style.opacity = '1';
+      btn.style.cursor  = 'pointer';
       isRefreshing = false;
-    }, 1500);
+    }, 1200);
   }
 }
 
