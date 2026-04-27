@@ -1,7 +1,9 @@
 {
-  "updatedAt": "2026-04-25T00:00:00.000Z",
-  "total": 45,
+  "updatedAt": "2026-04-27T00:00:00.000Z",
+  "total": 47,
   "draws": [
+    { "period": "第115047期", "date": "2026-04-24", "numbers": [7,14,16,37,39,47], "special": 34, "jackpot": "無人中獎" },
+    { "period": "第115046期", "date": "2026-04-21", "numbers": [1,6,17,19,20,40], "special": 22, "jackpot": "2.2億 1注" },
     { "period": "第115045期", "date": "2026-04-17", "numbers": [7,10,11,22,40,45], "special": 18, "jackpot": "無人中獎" },
     { "period": "第115044期", "date": "2026-04-14", "numbers": [4,8,21,23,24,43], "special": 13, "jackpot": "無人中獎" },
     { "period": "第115043期", "date": "2026-04-10", "numbers": [4,10,15,17,21,40], "special": 30, "jackpot": "無人中獎" },
