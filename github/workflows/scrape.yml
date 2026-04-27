@@ -1,68 +1,50 @@
 name: 🎰 抓取大樂透最新開獎資料
 
 on:
-  # 定時執行：每週二、五晚上 9:30 (台灣時間 = UTC+8，所以 UTC 13:30)
   schedule:
-    - cron: '30 13 * * 2'   # 週二 21:30 台灣時間
-    - cron: '30 13 * * 5'   # 週五 21:30 台灣時間
-
-  # 允許手動在 GitHub 上觸發
+    - cron: '30 13 * * 2'
+    - cron: '30 13 * * 5'
   workflow_dispatch:
-    inputs:
-      force_update:
-        description: '強制更新（即使沒有新資料）'
-        required: false
-        default: 'false'
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # 允許 commit 回 repo
+      contents: write
 
     steps:
-      # 1. 取出程式碼
-      - name: 📥 Checkout repository
+      - name: 📥 Checkout
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. 安裝 Node.js
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: scripts/package.json
 
-      # 3. 安裝依賴
       - name: 📦 Install dependencies
         working-directory: scripts
         run: npm ci
 
-      # 4. 安裝 Playwright 瀏覽器
-      - name: 🎭 Install Playwright browsers
+      - name: 🎭 Install Playwright
         working-directory: scripts
         run: npx playwright install chromium --with-deps
 
-      # 5. 執行爬蟲
       - name: 🕷️ Run scraper
         working-directory: scripts
         run: node scrape.js
         timeout-minutes: 5
 
-      # 6. 若有新資料則 commit
-      - name: 📝 Commit updated draws.json
+      - name: 📝 Commit draws.json
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add draws.json
-          # 只有有變更才 commit
           if git diff --staged --quiet; then
-            echo "✅ 無新資料，跳過 commit"
+            echo "無新資料，跳過 commit"
           else
             LATEST=$(node -e "const d=require('./draws.json'); console.log(d.draws[0].period + ' ' + d.draws[0].date)")
-            git commit -m "🎰 自動更新開獎資料：${LATEST}"
+            git commit -m "🎰 自動更新：${LATEST}"
             git push
-            echo "✅ 成功 commit 並 push"
           fi
