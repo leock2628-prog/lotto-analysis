@@ -802,6 +802,7 @@
         <button class="tab" onclick="showTab('oddeven')">⚖️ 奇偶比</button>
         <button class="tab" onclick="showTab('headtail')">🔢 頭尾數</button>
         <button class="tab" onclick="showTab('suggest')">💡 建議號碼</button>
+        <button class="tab" onclick="showTab('backtest')">🔬 回測分析</button>
       </div>
 
       <!-- Frequency Tab -->
@@ -984,9 +985,66 @@
         </div>
       </div>
 
-    </div>
+      <!-- Backtest Tab -->
+      <div id="tab-backtest" class="tab-content" style="display:none">
+        <div class="section-title">🔬 策略回測分析 <span class="section-badge">全47期，每期每策略×100次</span></div>
+        <div class="alert">
+          回測方式：對每一期，用「該期之前」的所有資料生成建議號碼（每個策略跑100次取平均），再對照該期實際開獎號碼計算命中數。
+        </div>
 
-    <!-- History Section -->
+        <div style="text-align:center;margin-bottom:20px">
+          <button class="btn btn-primary" id="backtestBtn" onclick="runBacktest()">
+            🚀 開始回測（約需15-30秒）
+          </button>
+        </div>
+
+        <div id="backtestProgress" style="display:none;margin-bottom:16px">
+          <div style="font-size:13px;color:var(--text2);margin-bottom:8px" id="backtestStatus">回測中...</div>
+          <div style="background:var(--bg3);border-radius:8px;overflow:hidden;height:8px">
+            <div id="backtestBar" style="height:100%;background:var(--accent);border-radius:8px;transition:width 0.3s;width:0%"></div>
+          </div>
+        </div>
+
+        <div id="backtestResult" style="display:none">
+          <!-- 總覽卡片 -->
+          <div class="grid-4 gap-20" id="backtestSummary"></div>
+
+          <!-- 各策略命中率表 -->
+          <div class="card gap-20" style="margin-top:16px">
+            <div class="card-title">📊 各策略平均命中數排行</div>
+            <div id="backtestStrategyTable"></div>
+          </div>
+
+          <!-- 命中分布圖 -->
+          <div class="grid-2" style="margin-top:16px">
+            <div class="card">
+              <div class="card-title">📈 各策略平均命中數比較</div>
+              <div style="position:relative;height:220px">
+                <canvas id="backtestBarChart"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">🎯 命中數分布（全策略合計）</div>
+              <div style="position:relative;height:220px">
+                <canvas id="backtestDistChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- 逐期明細 -->
+          <div class="card" style="margin-top:16px">
+            <div class="card-title">📋 逐期回測明細</div>
+            <div style="overflow-x:auto">
+              <table class="analysis-table" id="backtestDetailTable">
+                <thead><tr id="backtestDetailHead"></tr></thead>
+                <tbody id="backtestDetailBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
     <div class="card gap-20">
       <div class="flex-row" style="justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
         <div class="section-title" style="margin:0;border:none;padding:0">近期開獎記錄</div>
@@ -2217,15 +2275,14 @@ function renderHistory() {
 function showTab(name) {
   document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
   document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-  
+
   const el = document.getElementById(`tab-${name}`);
   if (el) el.style.display = 'block';
-  
+
   const tabs = document.querySelectorAll('.tab');
-  const tabMap = {freq:0, missing:1, streak:2, gap:3, sum:4, oddeven:5, headtail:6, suggest:7};
+  const tabMap = {freq:0, missing:1, streak:2, gap:3, sum:4, oddeven:5, headtail:6, suggest:7, backtest:8};
   if (tabs[tabMap[name]]) tabs[tabMap[name]].classList.add('active');
-  
-  // Trigger chart render if needed
+
   if (name === 'gap' && allDraws.length) {
     setTimeout(() => {
       const zones = computeGapAnalysis(allDraws);
@@ -2492,7 +2549,275 @@ async function init() {
     '。統計僅供參考，彩票屬機率事件，請理性購買。';
 }
 
-init();
+// =============================================
+// 回測引擎
+// =============================================
+
+const BACKTEST_RUNS = 100; // 每期每策略跑幾次
+
+// 計算兩組號碼的命中數
+function countHits(predicted, actual) {
+  return predicted.filter(n => actual.includes(n)).length;
+}
+
+// 用指定資料（某期之前）產生策略建議，跑 N 次取平均命中
+function backtestOnePeriod(historyDraws, actualDraw, runs) {
+  const freq    = computeFrequency(historyDraws, historyDraws.length);
+  const missing = computeMissing(historyDraws);
+
+  // 策略標籤清單
+  const labels = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+  const hitSums    = {};
+  const hitSpecial = {};
+  const hitDist    = {}; // 命中數分布 {0:次數, 1:次數, ...}
+  labels.forEach(l => { hitSums[l]=0; hitSpecial[l]=0; hitDist[l]={0:0,1:0,2:0,3:0,4:0,5:0,6:0}; });
+
+  for (let r = 0; r < runs; r++) {
+    const sets = generateSuggestions(freq, missing);
+    for (const s of sets) {
+      const hits = countHits(s.nums, actualDraw.numbers);
+      hitSums[s.label]    += hits;
+      hitDist[s.label][hits]++;
+      if (s.special === actualDraw.special) hitSpecial[s.label]++;
+    }
+  }
+
+  const result = {};
+  labels.forEach(l => {
+    result[l] = {
+      avgHit:    hitSums[l] / runs,
+      specialRate: hitSpecial[l] / runs,
+      dist:      hitDist[l],
+    };
+  });
+  return result;
+}
+
+async function runBacktest() {
+  if (allDraws.length < 3) {
+    showToast('⚠️ 資料不足，無法回測', 'warn');
+    return;
+  }
+
+  const btn = document.getElementById('backtestBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 回測中...';
+  document.getElementById('backtestProgress').style.display = 'block';
+  document.getElementById('backtestResult').style.display   = 'none';
+
+  const labels = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+
+  // 從最舊的期數往新跑（至少需要2期歷史才能生成策略）
+  // allDraws[0] 是最新，allDraws[length-1] 是最舊
+  // 回測第 i 期：用 allDraws[i+1...end] 作為歷史資料，對照 allDraws[i]
+  const sorted = [...allDraws].reverse(); // 由舊到新
+  const totalPeriods = sorted.length - 1; // 第0期沒有歷史，從第1期開始
+
+  // 總覽統計
+  const totalHitSum  = {};
+  const totalSpecial = {};
+  const totalDist    = {};
+  const allPeriodResults = [];
+  labels.forEach(l => {
+    totalHitSum[l]  = 0;
+    totalSpecial[l] = 0;
+    totalDist[l]    = {0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+  });
+
+  const statusEl = document.getElementById('backtestStatus');
+  const barEl    = document.getElementById('backtestBar');
+
+  for (let i = 1; i < sorted.length; i++) {
+    const actualDraw    = sorted[i];
+    const historyDraws  = sorted.slice(0, i).reverse(); // 傳入格式：新→舊
+
+    statusEl.textContent = `回測中... ${i}/${totalPeriods}（${actualDraw.period}）`;
+    barEl.style.width    = `${Math.round(i/totalPeriods*100)}%`;
+
+    // 讓 UI 更新
+    await new Promise(r => setTimeout(r, 0));
+
+    const periodResult = backtestOnePeriod(historyDraws, actualDraw, BACKTEST_RUNS);
+
+    const row = { period: actualDraw.period, date: actualDraw.date, actual: actualDraw.numbers, special: actualDraw.special };
+    labels.forEach(l => {
+      totalHitSum[l]  += periodResult[l].avgHit;
+      totalSpecial[l] += periodResult[l].specialRate;
+      Object.keys(periodResult[l].dist).forEach(k => {
+        totalDist[l][k] += periodResult[l].dist[k];
+      });
+      row[l] = periodResult[l].avgHit;
+    });
+    allPeriodResults.push(row);
+  }
+
+  // 計算最終平均
+  const avgHit     = {};
+  const avgSpecial = {};
+  labels.forEach(l => {
+    avgHit[l]     = totalHitSum[l] / totalPeriods;
+    avgSpecial[l] = totalSpecial[l] / totalPeriods;
+  });
+
+  // 渲染結果
+  renderBacktestResult(labels, avgHit, avgSpecial, totalDist, allPeriodResults, totalPeriods);
+
+  btn.disabled    = false;
+  btn.textContent = '🔄 重新回測';
+  document.getElementById('backtestProgress').style.display = 'none';
+  document.getElementById('backtestResult').style.display   = 'block';
+}
+
+function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows, totalPeriods) {
+  // ── 總覽卡片 ────────────────────────────────
+  const sorted = [...labels].sort((a,b) => avgHit[b] - avgHit[a]);
+  const best   = sorted[0];
+  const worst  = sorted[sorted.length-1];
+
+  // 全策略合計命中分布
+  const allDist = {0:0,1:0,2:0,3:0,4:0,5:0,6:0};
+  labels.forEach(l => Object.keys(totalDist[l]).forEach(k => allDist[k] += totalDist[l][k]));
+  const totalTrials = labels.length * totalPeriods * BACKTEST_RUNS;
+  const hit3plus = (allDist[3]+allDist[4]+allDist[5]+allDist[6]) / totalTrials * 100;
+  const hit4plus = (allDist[4]+allDist[5]+allDist[6]) / totalTrials * 100;
+
+  document.getElementById('backtestSummary').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--gold)">${avgHit[best].toFixed(3)}</div>
+      <div class="stat-label">最佳策略平均命中</div>
+      <div class="stat-change positive">組${best}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="font-size:20px">${totalPeriods}</div>
+      <div class="stat-label">回測期數</div>
+      <div class="stat-change" style="color:var(--text3)">×${BACKTEST_RUNS}次/期</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--green)">${hit3plus.toFixed(1)}%</div>
+      <div class="stat-label">命中3個以上機率</div>
+      <div class="stat-change" style="color:var(--text3)">5獎以上</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="color:var(--accent)">${hit4plus.toFixed(2)}%</div>
+      <div class="stat-label">命中4個以上機率</div>
+      <div class="stat-change" style="color:var(--text3)">4獎以上</div>
+    </div>
+  `;
+
+  // ── 策略排行表 ────────────────────────────────
+  const strategyNames = {
+    A:'均衡熱門', B:'均衡遺漏', C:'冷熱均衡', D:'奇偶3:3', E:'大小3:3',
+    F:'統計加權①', G:'統計加權②', H:'5區各1+補1', I:'跨度分散', J:'無連續號',
+    K:'7碼區間包牌', L:'7碼綜合評分'
+  };
+
+  const maxAvg = Math.max(...labels.map(l => avgHit[l]));
+  document.getElementById('backtestStrategyTable').innerHTML = `
+    <table class="analysis-table" style="width:100%">
+      <thead><tr>
+        <th>排名</th><th>組別</th><th>策略</th>
+        <th>平均命中</th><th>命中分布</th>
+        <th>命中3+</th><th>命中4+</th><th>特別號率</th>
+      </tr></thead>
+      <tbody>
+        ${sorted.map((l, rank) => {
+          const dist   = totalDist[l];
+          const trials = totalPeriods * BACKTEST_RUNS;
+          const p3 = ((dist[3]+dist[4]+dist[5]+dist[6])/trials*100).toFixed(1);
+          const p4 = ((dist[4]+dist[5]+dist[6])/trials*100).toFixed(2);
+          const barW = Math.round(avgHit[l]/maxAvg*100);
+          const isTop = rank === 0;
+          return `<tr style="${isTop?'background:rgba(245,158,11,0.08)':''}">
+            <td style="font-weight:700;color:${rank<3?'var(--gold)':'var(--text3)'}">${rank+1}</td>
+            <td class="num-col">${l}</td>
+            <td style="color:var(--text2)">${strategyNames[l]}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${isTop?'var(--gold)':'var(--accent)'}">${avgHit[l].toFixed(3)}</span>
+                <div style="flex:1;background:var(--bg3);height:6px;border-radius:3px;min-width:60px">
+                  <div style="width:${barW}%;height:100%;background:${isTop?'var(--gold)':'var(--accent)'};border-radius:3px"></div>
+                </div>
+              </div>
+            </td>
+            <td style="font-size:11px;color:var(--text3)">
+              ${[0,1,2,3,4,5,6].map(k=>`${k}:${dist[k]}`).join(' ')}
+            </td>
+            <td style="color:var(--green)">${p3}%</td>
+            <td style="color:var(--accent)">${p4}%</td>
+            <td style="color:var(--text3)">${(avgSpecial[l]*100).toFixed(1)}%</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+
+  // ── Bar Chart ────────────────────────────────
+  if (charts.backtestBar) charts.backtestBar.destroy();
+  charts.backtestBar = new Chart(document.getElementById('backtestBarChart'), {
+    type: 'bar',
+    data: {
+      labels: sorted,
+      datasets: [{
+        label: '平均命中數',
+        data:  sorted.map(l => +avgHit[l].toFixed(3)),
+        backgroundColor: sorted.map((l,i) => i===0 ? '#f59e0b' : i<3 ? '#3b82f6' : '#1e3a6e'),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false} },
+      scales: {
+        x: { ticks:{color:'#94a3b8',font:{size:11}}, grid:{color:'#1e2d45'} },
+        y: { ticks:{color:'#94a3b8',font:{size:10}}, grid:{color:'#1e2d45'}, min:0 }
+      }
+    }
+  });
+
+  // ── Distribution Pie ─────────────────────────
+  if (charts.backtestDist) charts.backtestDist.destroy();
+  charts.backtestDist = new Chart(document.getElementById('backtestDistChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['命中0','命中1','命中2','命中3','命中4','命中5','命中6'],
+      datasets: [{
+        data: [0,1,2,3,4,5,6].map(k => allDist[k]),
+        backgroundColor: ['#1e2d45','#334155','#475569','#10b981','#3b82f6','#8b5cf6','#f59e0b'],
+        borderWidth: 0,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position:'right', labels:{color:'#94a3b8',font:{size:10},boxWidth:12} }
+      }
+    }
+  });
+
+  // ── 逐期明細表 ────────────────────────────────
+  document.getElementById('backtestDetailHead').innerHTML = `
+    <th>期數</th><th>日期</th><th>實際開獎</th>
+    ${sorted.map(l=>`<th style="color:${l===best?'var(--gold)':'var(--text2)'}">${l}</th>`).join('')}
+  `;
+
+  document.getElementById('backtestDetailBody').innerHTML = periodRows.map(row => {
+    const bestHitInRow = Math.max(...sorted.map(l=>row[l]));
+    return `<tr>
+      <td class="num-col">${row.period}</td>
+      <td style="color:var(--text3);font-size:11px">${row.date}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent)">
+        ${row.actual.map(n=>String(n).padStart(2,'0')).join(' ')}
+        <span style="color:var(--red)">+${String(row.special).padStart(2,'0')}</span>
+      </td>
+      ${sorted.map(l => {
+        const v = row[l].toFixed(2);
+        const isBest = row[l] === bestHitInRow && row[l] > 0;
+        const color = row[l]>=4?'var(--gold)':row[l]>=3?'var(--green)':row[l]>=2?'var(--accent)':'var(--text3)';
+        return `<td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:${color};${isBest?'font-weight:700':''}">${v}</td>`;
+      }).join('')}
+    </tr>`;
+  }).join('');
+}
 </script>
 </body>
 </html>
