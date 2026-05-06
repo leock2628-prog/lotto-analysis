@@ -1099,6 +1099,10 @@
 let allDraws = [];
 let charts = {};
 
+function canRenderCharts() {
+  return typeof Chart !== 'undefined';
+}
+
 // ===== 內建備用資料（draws.json 讀取失敗時使用）=====
 const FALLBACK_DRAWS = [
   { period:'第115047期', date:'2026-04-24', numbers:[7,14,16,37,39,47], special:34, jackpot:'無人中獎' },
@@ -1254,10 +1258,10 @@ function loadDrawsFromSheet() {
     };
 
     // 建立 JSONP script tag
-    // 正確格式：tqx=out:json,responseHandler:callbackName
+    // 正確格式：tqx=out:json;responseHandler:callbackName
     const script = document.createElement('script');
     script.id  = 'gsScript';
-    const sheetUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tq=select%20*&sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json,responseHandler:${callbackName}&_=${Date.now()}`;
+    const sheetUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tq=select%20*&sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json;responseHandler:${callbackName}&_=${Date.now()}`;
     console.log('📡 JSONP URL:', sheetUrl);
     script.src = sheetUrl;
     script.onerror = (e) => {
@@ -1950,6 +1954,7 @@ function renderGapAnalysis(zones, draws) {
   `;
   
   // Trend chart
+  if (!canRenderCharts()) return;
   if (charts.gapTrend) { charts.gapTrend.destroy(); }
   const zoneLabels = Object.keys(zones);
   const zoneColors = ['#3b82f6','#8b5cf6','#06b6d4','#10b981','#f59e0b'];
@@ -2013,31 +2018,33 @@ function renderSumAnalysis(draws) {
   `;
   
   // Sum trend chart
-  if (charts.sumTrend) charts.sumTrend.destroy();
-  const last30 = sums.slice(0,30).reverse();
-  charts.sumTrend = new Chart(document.getElementById('sumTrendChart'), {
-    type: 'line',
-    data: {
-      labels: last30.map(s=>s.period.slice(-4)),
-      datasets: [{
-        label: '和值',
-        data: last30.map(s=>s.sum),
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59,130,246,0.1)',
-        tension: 0.3,
-        pointRadius: 3,
-        fill: true
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#64748b', font:{size:9}, maxRotation:45 }, grid: { color: '#1e2d45' } },
-        y: { ticks: { color: '#64748b', font:{size:9} }, grid: { color: '#1e2d45' } }
+  if (canRenderCharts()) {
+    if (charts.sumTrend) charts.sumTrend.destroy();
+    const last30 = sums.slice(0,30).reverse();
+    charts.sumTrend = new Chart(document.getElementById('sumTrendChart'), {
+      type: 'line',
+      data: {
+        labels: last30.map(s=>s.period.slice(-4)),
+        datasets: [{
+          label: '和值',
+          data: last30.map(s=>s.sum),
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.1)',
+          tension: 0.3,
+          pointRadius: 3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#64748b', font:{size:9}, maxRotation:45 }, grid: { color: '#1e2d45' } },
+          y: { ticks: { color: '#64748b', font:{size:9} }, grid: { color: '#1e2d45' } }
+        }
       }
-    }
-  });
+    });
+  }
   
   // Sum table
   document.getElementById('sumTable').innerHTML = sums.slice(0,10).map(s=>{
@@ -2078,26 +2085,28 @@ function renderOddEven(draws) {
     }).join('');
   
   // Chart
-  if (charts.oddEven) charts.oddEven.destroy();
-  const last30 = draws.slice(0,30).reverse();
-  charts.oddEven = new Chart(document.getElementById('oddEvenChart'), {
-    type: 'bar',
-    data: {
-      labels: last30.map(d=>d.period.slice(-4)),
-      datasets: [
-        {label:'奇數', data: last30.map(d=>d.numbers.filter(n=>n%2!==0).length), backgroundColor:'#3b82f6'},
-        {label:'偶數', data: last30.map(d=>d.numbers.filter(n=>n%2===0).length), backgroundColor:'#f59e0b'}
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { stacked: true, ticks:{color:'#64748b',font:{size:9},maxRotation:45}, grid:{color:'#1e2d45'} },
-        y: { stacked: true, ticks:{color:'#64748b',font:{size:9}}, grid:{color:'#1e2d45'}, max:6 }
+  if (canRenderCharts()) {
+    if (charts.oddEven) charts.oddEven.destroy();
+    const last30 = draws.slice(0,30).reverse();
+    charts.oddEven = new Chart(document.getElementById('oddEvenChart'), {
+      type: 'bar',
+      data: {
+        labels: last30.map(d=>d.period.slice(-4)),
+        datasets: [
+          {label:'奇數', data: last30.map(d=>d.numbers.filter(n=>n%2!==0).length), backgroundColor:'#3b82f6'},
+          {label:'偶數', data: last30.map(d=>d.numbers.filter(n=>n%2===0).length), backgroundColor:'#f59e0b'}
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { stacked: true, ticks:{color:'#64748b',font:{size:9},maxRotation:45}, grid:{color:'#1e2d45'} },
+          y: { stacked: true, ticks:{color:'#64748b',font:{size:9}}, grid:{color:'#1e2d45'}, max:6 }
+        }
       }
-    }
-  });
+    });
+  }
   
   // Big/Small
   const bigSmallDist = {'0:6':0,'1:5':0,'2:4':0,'3:3':0,'4:2':0,'5:1':0,'6:0':0};
@@ -2694,21 +2703,6 @@ async function runBacktest() {
 
   // 捲動到結果
   document.getElementById('backtestResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}  // 計算最終平均
-  const avgHit     = {};
-  const avgSpecial = {};
-  labels.forEach(l => {
-    avgHit[l]     = totalHitSum[l] / totalPeriods;
-    avgSpecial[l] = totalSpecial[l] / totalPeriods;
-  });
-
-  // 渲染結果
-  renderBacktestResult(labels, avgHit, avgSpecial, totalDist, allPeriodResults, totalPeriods);
-
-  btn.disabled    = false;
-  btn.textContent = '🔄 重新回測';
-  document.getElementById('backtestProgress').style.display = 'none';
-  document.getElementById('backtestResult').style.display   = 'block';
 }
 
 function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows, totalPeriods, runs) {
@@ -2795,47 +2789,49 @@ function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows,
   `;
 
   // ── Bar Chart ────────────────────────────────
-  if (charts.backtestBar) charts.backtestBar.destroy();
-  charts.backtestBar = new Chart(document.getElementById('backtestBarChart'), {
-    type: 'bar',
-    data: {
-      labels: sorted,
-      datasets: [{
-        label: '平均命中數',
-        data:  sorted.map(l => +avgHit[l].toFixed(3)),
-        backgroundColor: sorted.map((l,i) => i===0 ? '#f59e0b' : i<3 ? '#3b82f6' : '#1e3a6e'),
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend:{display:false} },
-      scales: {
-        x: { ticks:{color:'#94a3b8',font:{size:11}}, grid:{color:'#1e2d45'} },
-        y: { ticks:{color:'#94a3b8',font:{size:10}}, grid:{color:'#1e2d45'}, min:0 }
+  if (canRenderCharts()) {
+    if (charts.backtestBar) charts.backtestBar.destroy();
+    charts.backtestBar = new Chart(document.getElementById('backtestBarChart'), {
+      type: 'bar',
+      data: {
+        labels: sorted,
+        datasets: [{
+          label: '平均命中數',
+          data:  sorted.map(l => +avgHit[l].toFixed(3)),
+          backgroundColor: sorted.map((l,i) => i===0 ? '#f59e0b' : i<3 ? '#3b82f6' : '#1e3a6e'),
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend:{display:false} },
+        scales: {
+          x: { ticks:{color:'#94a3b8',font:{size:11}}, grid:{color:'#1e2d45'} },
+          y: { ticks:{color:'#94a3b8',font:{size:10}}, grid:{color:'#1e2d45'}, min:0 }
+        }
       }
-    }
-  });
+    });
 
-  // ── Distribution Pie ─────────────────────────
-  if (charts.backtestDist) charts.backtestDist.destroy();
-  charts.backtestDist = new Chart(document.getElementById('backtestDistChart'), {
-    type: 'doughnut',
-    data: {
-      labels: ['命中0','命中1','命中2','命中3','命中4','命中5','命中6'],
-      datasets: [{
-        data: [0,1,2,3,4,5,6].map(k => allDist[k]),
-        backgroundColor: ['#1e2d45','#334155','#475569','#10b981','#3b82f6','#8b5cf6','#f59e0b'],
-        borderWidth: 0,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position:'right', labels:{color:'#94a3b8',font:{size:10},boxWidth:12} }
+    // ── Distribution Pie ─────────────────────────
+    if (charts.backtestDist) charts.backtestDist.destroy();
+    charts.backtestDist = new Chart(document.getElementById('backtestDistChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['命中0','命中1','命中2','命中3','命中4','命中5','命中6'],
+        datasets: [{
+          data: [0,1,2,3,4,5,6].map(k => allDist[k]),
+          backgroundColor: ['#1e2d45','#334155','#475569','#10b981','#3b82f6','#8b5cf6','#f59e0b'],
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position:'right', labels:{color:'#94a3b8',font:{size:10},boxWidth:12} }
+        }
       }
-    }
-  });
+    });
+  }
 
   // ── 逐期明細表 ────────────────────────────────
   document.getElementById('backtestDetailHead').innerHTML = `
@@ -2861,6 +2857,8 @@ function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows,
     </tr>`;
   }).join('');
 }
+
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
