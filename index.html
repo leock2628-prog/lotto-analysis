@@ -753,7 +753,7 @@
   <!-- Loading State -->
   <div id="loadingState" class="loading">
     <div class="spinner"></div>
-    <span>正在載入 2026/01/02 ~ 2026/04/17 真實開獎資料（第115001～115045期）...</span>
+    <span>正在從 Google Sheet 載入最新開獎資料...</span>
   </div>
 
   <!-- Main Content (hidden until loaded) -->
@@ -806,7 +806,6 @@
         <button class="tab" onclick="showTab('oddeven')">⚖️ 奇偶比</button>
         <button class="tab" onclick="showTab('headtail')">🔢 頭尾數</button>
         <button class="tab" onclick="showTab('suggest')">💡 建議號碼</button>
-        <button class="tab" onclick="showTab('backtest')">🔬 回測分析</button>
       </div>
 
       <!-- Frequency Tab -->
@@ -989,66 +988,9 @@
         </div>
       </div>
 
-      <!-- Backtest Tab -->
-      <div id="tab-backtest" class="tab-content" style="display:none">
-        <div class="section-title">🔬 策略回測分析 <span class="section-badge">全47期，每期每策略×100次</span></div>
-        <div class="alert">
-          回測方式：對每一期，用「該期之前」的所有資料生成建議號碼（每個策略跑100次取平均），再對照該期實際開獎號碼計算命中數。
-        </div>
-
-        <div style="text-align:center;margin-bottom:20px">
-          <button class="btn btn-primary" id="backtestBtn" onclick="runBacktest()">
-            🚀 開始回測（約需15-30秒）
-          </button>
-        </div>
-
-        <div id="backtestProgress" style="display:none;margin-bottom:16px">
-          <div style="font-size:13px;color:var(--text2);margin-bottom:8px" id="backtestStatus">回測中...</div>
-          <div style="background:var(--bg3);border-radius:8px;overflow:hidden;height:8px">
-            <div id="backtestBar" style="height:100%;background:var(--accent);border-radius:8px;transition:width 0.3s;width:0%"></div>
-          </div>
-        </div>
-
-        <div id="backtestResult" style="display:none">
-          <!-- 總覽卡片 -->
-          <div class="grid-4 gap-20" id="backtestSummary"></div>
-
-          <!-- 各策略命中率表 -->
-          <div class="card gap-20" style="margin-top:16px">
-            <div class="card-title">📊 各策略平均命中數排行</div>
-            <div id="backtestStrategyTable"></div>
-          </div>
-
-          <!-- 命中分布圖 -->
-          <div class="grid-2" style="margin-top:16px">
-            <div class="card">
-              <div class="card-title">📈 各策略平均命中數比較</div>
-              <div style="position:relative;height:220px">
-                <canvas id="backtestBarChart"></canvas>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-title">🎯 命中數分布（全策略合計）</div>
-              <div style="position:relative;height:220px">
-                <canvas id="backtestDistChart"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- 逐期明細 -->
-          <div class="card" style="margin-top:16px">
-            <div class="card-title">📋 逐期回測明細</div>
-            <div style="overflow-x:auto">
-              <table class="analysis-table" id="backtestDetailTable">
-                <thead><tr id="backtestDetailHead"></tr></thead>
-                <tbody id="backtestDetailBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
+
+    <!-- History Section -->
     <div class="card gap-20">
       <div class="flex-row" style="justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
         <div class="section-title" style="margin:0;border:none;padding:0">近期開獎記錄</div>
@@ -1062,6 +1004,87 @@
         </div>
       </div>
       <div class="history-list" id="historyList"></div>
+    </div>
+
+    <!-- ══ 回測分析（獨立區塊）══ -->
+    <div class="card" style="margin-top:24px">
+      <div class="section-title" style="margin-bottom:16px">
+        🔬 策略回測分析
+        <span class="section-badge">固定種子，每期每策略×100次</span>
+      </div>
+
+      <div class="alert" style="margin-bottom:16px">
+        回測方式：對每一期，用「該期之前」資料生成建議號碼（每策略跑100次取平均），對照實際開獎計算命中數。
+      </div>
+
+      <!-- 設定列 -->
+      <div class="flex-row" style="margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div class="flex-row" style="gap:8px;align-items:center">
+          <span style="font-size:13px;color:var(--text2)">回測期數：</span>
+          <select id="backtestPeriods" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:8px;font-size:13px;cursor:pointer">
+            <option value="10">最近 10 期</option>
+            <option value="20">最近 20 期</option>
+            <option value="30">最近 30 期</option>
+            <option value="all" selected>全部（所有期）</option>
+          </select>
+        </div>
+        <div class="flex-row" style="gap:8px;align-items:center">
+          <span style="font-size:13px;color:var(--text2)">每期模擬：</span>
+          <select id="backtestRuns" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:8px;font-size:13px;cursor:pointer">
+            <option value="30">30 次（快速）</option>
+            <option value="50">50 次</option>
+            <option value="100" selected>100 次（標準）</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="backtestBtn" onclick="runBacktest()" style="padding:8px 20px">
+          🚀 開始回測
+        </button>
+      </div>
+
+      <!-- 進度條 -->
+      <div id="backtestProgress" style="display:none;margin-bottom:16px">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:8px" id="backtestStatus">回測中...</div>
+        <div style="background:var(--bg3);border-radius:8px;overflow:hidden;height:8px">
+          <div id="backtestBar" style="height:100%;background:var(--accent);border-radius:8px;transition:width 0.2s;width:0%"></div>
+        </div>
+      </div>
+
+      <!-- 結果 -->
+      <div id="backtestResult" style="display:none">
+        <div class="grid-4 gap-20" id="backtestSummary" style="margin-bottom:16px"></div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title">📊 各策略平均命中數排行</div>
+          <div id="backtestStrategyTable"></div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:16px">
+          <div class="card">
+            <div class="card-title">📈 各策略平均命中數比較</div>
+            <div style="position:relative;height:220px">
+              <canvas id="backtestBarChart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">🎯 命中數分布（全策略合計）</div>
+            <div style="position:relative;height:220px">
+              <canvas id="backtestDistChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📋 逐期回測明細</div>
+          <div style="overflow-x:auto;max-height:400px;overflow-y:auto">
+            <table class="analysis-table" id="backtestDetailTable">
+              <thead style="position:sticky;top:0;background:var(--bg3);z-index:1">
+                <tr id="backtestDetailHead"></tr>
+              </thead>
+              <tbody id="backtestDetailBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div><!-- /mainContent -->
@@ -2284,7 +2307,7 @@ function showTab(name) {
   if (el) el.style.display = 'block';
 
   const tabs = document.querySelectorAll('.tab');
-  const tabMap = {freq:0, missing:1, streak:2, gap:3, sum:4, oddeven:5, headtail:6, suggest:7, backtest:8};
+  const tabMap = {freq:0, missing:1, streak:2, gap:3, sum:4, oddeven:5, headtail:6, suggest:7};
   if (tabs[tabMap[name]]) tabs[tabMap[name]].classList.add('active');
 
   if (name === 'gap' && allDraws.length) {
@@ -2557,8 +2580,6 @@ async function init() {
 // 回測引擎
 // =============================================
 
-const BACKTEST_RUNS = 100; // 每期每策略跑幾次
-
 // 計算兩組號碼的命中數
 function countHits(predicted, actual) {
   return predicted.filter(n => actual.includes(n)).length;
@@ -2608,19 +2629,34 @@ async function runBacktest() {
   btn.textContent = '⏳ 回測中...';
   document.getElementById('backtestProgress').style.display = 'block';
   document.getElementById('backtestResult').style.display   = 'none';
+  document.getElementById('backtestBar').style.width = '0%';
 
-  const labels = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+  // 讀取選項
+  const periodSel = document.getElementById('backtestPeriods').value;
+  const runs      = parseInt(document.getElementById('backtestRuns').value, 10);
+  const labels    = ['A','B','C','D','E','F','G','H','I','J','K','L'];
 
-  // 從最舊的期數往新跑（至少需要2期歷史才能生成策略）
-  // allDraws[0] 是最新，allDraws[length-1] 是最舊
-  // 回測第 i 期：用 allDraws[i+1...end] 作為歷史資料，對照 allDraws[i]
-  const sorted = [...allDraws].reverse(); // 由舊到新
-  const totalPeriods = sorted.length - 1; // 第0期沒有歷史，從第1期開始
+  // sorted: 由舊到新
+  const sorted = [...allDraws].reverse();
 
-  // 總覽統計
-  const totalHitSum  = {};
-  const totalSpecial = {};
-  const totalDist    = {};
+  // 決定回測哪些期（最新 N 期）
+  let startIdx = 1; // index=0 沒有歷史，從1開始
+  if (periodSel !== 'all') {
+    const n = parseInt(periodSel, 10);
+    startIdx = Math.max(1, sorted.length - n);
+  }
+  const totalPeriods = sorted.length - startIdx;
+
+  if (totalPeriods < 1) {
+    showToast('⚠️ 可回測期數不足', 'warn');
+    btn.disabled = false;
+    btn.textContent = '🚀 開始回測';
+    document.getElementById('backtestProgress').style.display = 'none';
+    return;
+  }
+
+  // 統計初始化
+  const totalHitSum  = {}, totalSpecial = {}, totalDist = {};
   const allPeriodResults = [];
   labels.forEach(l => {
     totalHitSum[l]  = 0;
@@ -2631,19 +2667,25 @@ async function runBacktest() {
   const statusEl = document.getElementById('backtestStatus');
   const barEl    = document.getElementById('backtestBar');
 
-  for (let i = 1; i < sorted.length; i++) {
-    const actualDraw    = sorted[i];
-    const historyDraws  = sorted.slice(0, i).reverse(); // 傳入格式：新→舊
+  for (let i = startIdx; i < sorted.length; i++) {
+    const actualDraw   = sorted[i];
+    const historyDraws = sorted.slice(0, i).reverse(); // 新→舊
 
-    statusEl.textContent = `回測中... ${i}/${totalPeriods}（${actualDraw.period}）`;
-    barEl.style.width    = `${Math.round(i/totalPeriods*100)}%`;
+    const done = i - startIdx + 1;
+    statusEl.textContent = `回測中 ${done}/${totalPeriods}（${actualDraw.period}）`;
+    barEl.style.width    = `${Math.round(done / totalPeriods * 100)}%`;
 
-    // 讓 UI 更新
+    // 每期讓瀏覽器喘息一次，避免卡死
     await new Promise(r => setTimeout(r, 0));
 
-    const periodResult = backtestOnePeriod(historyDraws, actualDraw, BACKTEST_RUNS);
+    const periodResult = backtestOnePeriod(historyDraws, actualDraw, runs);
 
-    const row = { period: actualDraw.period, date: actualDraw.date, actual: actualDraw.numbers, special: actualDraw.special };
+    const row = {
+      period: actualDraw.period,
+      date:   actualDraw.date,
+      actual: actualDraw.numbers,
+      special: actualDraw.special
+    };
     labels.forEach(l => {
       totalHitSum[l]  += periodResult[l].avgHit;
       totalSpecial[l] += periodResult[l].specialRate;
@@ -2655,7 +2697,22 @@ async function runBacktest() {
     allPeriodResults.push(row);
   }
 
-  // 計算最終平均
+  const avgHit     = {}, avgSpecial = {};
+  labels.forEach(l => {
+    avgHit[l]     = totalHitSum[l]  / totalPeriods;
+    avgSpecial[l] = totalSpecial[l] / totalPeriods;
+  });
+
+  renderBacktestResult(labels, avgHit, avgSpecial, totalDist, allPeriodResults, totalPeriods, runs);
+
+  btn.disabled    = false;
+  btn.textContent = '🔄 重新回測';
+  document.getElementById('backtestProgress').style.display = 'none';
+  document.getElementById('backtestResult').style.display   = 'block';
+
+  // 捲動到結果
+  document.getElementById('backtestResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}  // 計算最終平均
   const avgHit     = {};
   const avgSpecial = {};
   labels.forEach(l => {
@@ -2672,7 +2729,7 @@ async function runBacktest() {
   document.getElementById('backtestResult').style.display   = 'block';
 }
 
-function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows, totalPeriods) {
+function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows, totalPeriods, runs) {
   // ── 總覽卡片 ────────────────────────────────
   const sorted = [...labels].sort((a,b) => avgHit[b] - avgHit[a]);
   const best   = sorted[0];
@@ -2681,7 +2738,7 @@ function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows,
   // 全策略合計命中分布
   const allDist = {0:0,1:0,2:0,3:0,4:0,5:0,6:0};
   labels.forEach(l => Object.keys(totalDist[l]).forEach(k => allDist[k] += totalDist[l][k]));
-  const totalTrials = labels.length * totalPeriods * BACKTEST_RUNS;
+  const totalTrials = labels.length * totalPeriods * runs;
   const hit3plus = (allDist[3]+allDist[4]+allDist[5]+allDist[6]) / totalTrials * 100;
   const hit4plus = (allDist[4]+allDist[5]+allDist[6]) / totalTrials * 100;
 
@@ -2694,7 +2751,7 @@ function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows,
     <div class="stat-card">
       <div class="stat-value" style="font-size:20px">${totalPeriods}</div>
       <div class="stat-label">回測期數</div>
-      <div class="stat-change" style="color:var(--text3)">×${BACKTEST_RUNS}次/期</div>
+      <div class="stat-change" style="color:var(--text3)">×${runs}次/期</div>
     </div>
     <div class="stat-card">
       <div class="stat-value" style="color:var(--green)">${hit3plus.toFixed(1)}%</div>
@@ -2726,7 +2783,7 @@ function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows,
       <tbody>
         ${sorted.map((l, rank) => {
           const dist   = totalDist[l];
-          const trials = totalPeriods * BACKTEST_RUNS;
+          const trials = totalPeriods * runs;
           const p3 = ((dist[3]+dist[4]+dist[5]+dist[6])/trials*100).toFixed(1);
           const p4 = ((dist[4]+dist[5]+dist[6])/trials*100).toFixed(2);
           const barW = Math.round(avgHit[l]/maxAvg*100);
