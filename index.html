@@ -2858,7 +2858,11 @@ function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows,
   }).join('');
 }
 
-document.addEventListener('DOMContentLoaded', init);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init, { once: true });
+} else {
+  init();
+}
 </script>
 </body>
 </html>
