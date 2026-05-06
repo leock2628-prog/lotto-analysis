@@ -962,20 +962,20 @@
         <div class="section-title" style="margin-top:24px">生成策略說明</div>
         <div class="card">
           <table class="analysis-table">
-            <thead><tr><th>組別</th><th>碼數</th><th>策略</th><th>說明</th></tr></thead>
+            <thead><tr><th>組別</th><th>碼數</th><th>策略</th><th>說明</th><th>共同條件</th></tr></thead>
             <tbody>
-              <tr><td class="num-col">A</td><td style="color:var(--accent)">6碼</td><td>熱門優先</td><td style="color:var(--text2)">出現頻率最高的6個號碼</td></tr>
-              <tr><td class="num-col">B</td><td style="color:var(--accent)">6碼</td><td>遺漏回補</td><td style="color:var(--text2)">遺漏值最高的6個號碼</td></tr>
-              <tr><td class="num-col">C</td><td style="color:var(--accent)">6碼</td><td>冷熱平衡 3+3</td><td style="color:var(--text2)">3個熱門號 + 3個遺漏號</td></tr>
-              <tr><td class="num-col">D</td><td style="color:var(--accent)">6碼</td><td>奇偶 3:3</td><td style="color:var(--text2)">奇偶各3碼，取熱門池</td></tr>
-              <tr><td class="num-col">E</td><td style="color:var(--accent)">6碼</td><td>大小 3:3</td><td style="color:var(--text2)">大(25-49)小(1-24)各3碼</td></tr>
-              <tr><td class="num-col">F</td><td style="color:var(--accent)">6碼</td><td>統計隨機①</td><td style="color:var(--text2)">依歷史頻率加權隨機抽取</td></tr>
-              <tr><td class="num-col">G</td><td style="color:var(--accent)">6碼</td><td>統計隨機②</td><td style="color:var(--text2)">依歷史頻率加權隨機抽取（另一組）</td></tr>
-              <tr><td class="num-col">H</td><td style="color:var(--accent)">6碼</td><td>遺漏2+熱門4</td><td style="color:var(--text2)">2個高遺漏 + 4個熱門號</td></tr>
-              <tr><td class="num-col">I</td><td style="color:var(--accent)">6碼</td><td>熱門4+遺漏2</td><td style="color:var(--text2)">4個熱門號 + 2個高遺漏</td></tr>
-              <tr><td class="num-col">J</td><td style="color:var(--accent)">6碼</td><td>奇偶 2:4</td><td style="color:var(--text2)">奇2偶4，偶數偏多</td></tr>
-              <tr><td class="num-col">K</td><td style="color:var(--gold)">7碼</td><td>7碼熱門包牌</td><td style="color:var(--text2)">頻率最高7碼，包含全部7種6碼組合</td></tr>
-              <tr><td class="num-col">L</td><td style="color:var(--gold)">7碼</td><td>7碼統計包牌</td><td style="color:var(--text2)">依頻率加權抽取7碼包牌</td></tr>
+              <tr><td class="num-col">A</td><td style="color:var(--accent)">6碼</td><td>均衡熱門</td><td style="color:var(--text2)">每區各取1個熱門號，第6個補全體最熱門</td><td rowspan="10" style="color:var(--text3);font-size:11px;vertical-align:top;padding-top:10px;line-height:1.8">✅ 和值 100～200<br>✅ 不全奇或全偶<br>✅ 至少4個不同區間</td></tr>
+              <tr><td class="num-col">B</td><td style="color:var(--accent)">6碼</td><td>均衡遺漏</td><td style="color:var(--text2)">每區各取1個高遺漏號，第6個補最高遺漏</td></tr>
+              <tr><td class="num-col">C</td><td style="color:var(--accent)">6碼</td><td>冷熱均衡</td><td style="color:var(--text2)">每區1個，頻率+遺漏綜合評分選取</td></tr>
+              <tr><td class="num-col">D</td><td style="color:var(--accent)">6碼</td><td>奇偶 3:3</td><td style="color:var(--text2)">奇偶各3，確保至少4個不同區間</td></tr>
+              <tr><td class="num-col">E</td><td style="color:var(--accent)">6碼</td><td>大小 3:3</td><td style="color:var(--text2)">大(25-49)小(1-24)各3，確保區間平衡</td></tr>
+              <tr><td class="num-col">F</td><td style="color:var(--accent)">6碼</td><td>統計加權①</td><td style="color:var(--text2)">頻率50%+遺漏50%綜合評分最高6個</td></tr>
+              <tr><td class="num-col">G</td><td style="color:var(--accent)">6碼</td><td>統計加權②</td><td style="color:var(--text2)">遺漏權重加重（頻率30%+遺漏70%）</td></tr>
+              <tr><td class="num-col">H</td><td style="color:var(--accent)">6碼</td><td>5區各1+補1</td><td style="color:var(--text2)">5個區間各強制1個，第6個補綜合最高分</td></tr>
+              <tr><td class="num-col">I</td><td style="color:var(--accent)">6碼</td><td>跨度分散</td><td style="color:var(--text2)">號碼間距盡量均勻，跨度大於35</td></tr>
+              <tr><td class="num-col">J</td><td style="color:var(--accent)">6碼</td><td>無連續號</td><td style="color:var(--text2)">確保無相鄰連續號碼，每區至少1個</td></tr>
+              <tr><td class="num-col">K</td><td style="color:var(--gold)">7碼</td><td>7碼區間包牌</td><td style="color:var(--text2)">5區各強制1個再補2個，全區覆蓋</td><td style="color:var(--text3);font-size:11px">7注合1組</td></tr>
+              <tr><td class="num-col">L</td><td style="color:var(--gold)">7碼</td><td>7碼綜合評分</td><td style="color:var(--text2)">頻率+遺漏綜合評分最高7碼（加擾動）</td><td style="color:var(--text3);font-size:11px">7注合1組</td></tr>
             </tbody>
           </table>
           <div style="margin-top:16px; text-align:center">
@@ -1346,13 +1346,45 @@ function computeGapAnalysis(draws, last = 100) {
 }
 
 // =============================================
-// GENERATE SUGGESTION
+// GENERATE SUGGESTION - 新版區間平衡策略
 // =============================================
 
 function generateSuggestions(freq, missing) {
-  // 建立含分數的號碼陣列 [{num, score}]
-  const freqArr  = Object.entries(freq).map(([k,v])=>({num:+k, score:v})).sort((a,b)=>b.score-a.score);
-  const missArr  = Object.entries(missing).map(([k,v])=>({num:+k, score:v})).sort((a,b)=>b.score-a.score);
+
+  // ── 基礎資料準備 ─────────────────────────────
+  // 5個區間定義
+  const ZONES = [
+    { name:'第1區', min:1,  max:10 },
+    { name:'第2區', min:11, max:20 },
+    { name:'第3區', min:21, max:30 },
+    { name:'第4區', min:31, max:40 },
+    { name:'第5區', min:41, max:49 },
+  ];
+
+  // 每個號碼屬於哪個區間
+  function getZone(n) { return ZONES.findIndex(z => n >= z.min && n <= z.max); }
+
+  // 頻率陣列（由高到低）
+  const freqArr = Object.entries(freq)
+    .map(([k,v]) => ({ num:+k, freq:v }))
+    .sort((a,b) => b.freq - a.freq);
+
+  // 遺漏陣列（由高到低）
+  const missArr = Object.entries(missing)
+    .map(([k,v]) => ({ num:+k, miss:v }))
+    .sort((a,b) => b.miss - a.miss);
+
+  // 綜合評分：頻率+遺漏各佔一半（標準化後相加）
+  const maxFreq = freqArr[0]?.freq || 1;
+  const maxMiss = missArr[0]?.miss || 1;
+  const scoreArr = Array.from({length:49}, (_,i) => {
+    const n = i+1;
+    const f = (freq[n] || 0) / maxFreq;
+    const m = (missing[n] || 0) / maxMiss;
+    return { num:n, score: f*0.5 + m*0.5, freq: freq[n]||0, miss: missing[n]||0 };
+  }).sort((a,b) => b.score - a.score);
+
+  // ── 工具函數 ──────────────────────────────────
 
   // Fisher-Yates shuffle
   function shuffle(arr) {
@@ -1364,151 +1396,241 @@ function generateSuggestions(freq, missing) {
     return a;
   }
 
-  // 從排行前 poolSize 的號碼裡隨機取 n 個（每次不同）
-  function randFromTop(arr, poolSize, n) {
-    const pool = shuffle(arr.slice(0, poolSize)).map(x=>x.num);
+  // 特別號：不與主號重複，隨機取
+  function pickSpecial(nums) {
+    const pool = shuffle(Array.from({length:49},(_,i)=>i+1).filter(n=>!nums.includes(n)));
+    return pool[0];
+  }
+
+  // 驗證6碼是否符合所有共同條件
+  function validate(nums) {
+    if (nums.length !== 6) return false;
+    const sum = nums.reduce((a,b)=>a+b,0);
+    if (sum < 100 || sum > 200) return false;                    // 和值 100-200
+    const odds = nums.filter(n=>n%2!==0).length;
+    if (odds === 0 || odds === 6) return false;                  // 不能全奇或全偶
+    const zones = new Set(nums.map(getZone));
+    if (zones.size < 4) return false;                            // 至少4個不同區間
+    return true;
+  }
+
+  // 嘗試多次生成直到符合條件，最多 maxTry 次
+  function tryGenerate(genFn, maxTry=200) {
+    for (let i=0; i<maxTry; i++) {
+      const nums = genFn();
+      if (validate(nums)) return nums;
+    }
+    // 超過次數→放寬和值條件再試
+    for (let i=0; i<maxTry; i++) {
+      const nums = genFn();
+      const sum = nums.reduce((a,b)=>a+b,0);
+      const odds = nums.filter(n=>n%2!==0).length;
+      const zones = new Set(nums.map(getZone));
+      if (sum>=80 && sum<=220 && odds>=1 && odds<=5 && zones.size>=3) return nums;
+    }
+    return genFn(); // 最後兜底
+  }
+
+  // ── 核心策略函數 ──────────────────────────────
+
+  // 每個區間各取1個號碼，第6個補最高分
+  function pickOnePerZone(srcArr, fillArr) {
     const used = new Set();
     const result = [];
-    for (const num of pool) {
-      if (result.length >= n) break;
-      if (!used.has(num)) { used.add(num); result.push(num); }
+    // 每區取分數最高1個（shuffle 後取，確保隨機）
+    for (const z of ZONES) {
+      const pool = shuffle(srcArr.filter(x => x.num>=z.min && x.num<=z.max)).slice(0,5);
+      for (const x of pool) {
+        if (!used.has(x.num)) { used.add(x.num); result.push(x.num); break; }
+      }
     }
-    while (result.length < n) {
-      const r = Math.floor(Math.random()*49)+1;
-      if (!used.has(r)) { used.add(r); result.push(r); }
+    // 補第6個（從 fillArr 最高分取）
+    for (const x of fillArr) {
+      if (result.length >= 6) break;
+      if (!used.has(x.num)) { used.add(x.num); result.push(x.num); }
     }
     return result.sort((a,b)=>a-b);
   }
 
-  // 加權隨機（每次真正不同）
-  function weightedRandom(n) {
-    // 加入額外隨機擾動：對每個號碼分數加一個隨機小量再排序
-    const noisy = freqArr.map(x=>({num:x.num, score: x.score + Math.random()*0.8}));
-    noisy.sort((a,b)=>b.score-a.score);
+  // 奇偶比 + 區間保證
+  function pickOddEven(oddCount, evenCount, srcArr) {
+    const used = new Set();
+    const result = [];
+    const pool = shuffle(srcArr);
+    const odds  = pool.filter(x=>x.num%2!==0);
+    const evens = pool.filter(x=>x.num%2===0);
+    odds.slice(0,oddCount).forEach(x=>{ if(!used.has(x.num)){used.add(x.num);result.push(x.num);} });
+    evens.slice(0,evenCount).forEach(x=>{ if(!used.has(x.num)){used.add(x.num);result.push(x.num);} });
+    // 補缺口
+    for (const x of shuffle(srcArr)) {
+      if (result.length>=6) break;
+      if (!used.has(x.num)) { used.add(x.num); result.push(x.num); }
+    }
+    return result.sort((a,b)=>a-b);
+  }
+
+  // 大小比 + 區間保證
+  function pickBigSmall(smallCount, bigCount, srcArr) {
+    const used = new Set();
+    const result = [];
+    const pool = shuffle(srcArr);
+    const smalls = pool.filter(x=>x.num<=24);
+    const bigs   = pool.filter(x=>x.num>=25);
+    smalls.slice(0,smallCount).forEach(x=>{ if(!used.has(x.num)){used.add(x.num);result.push(x.num);} });
+    bigs.slice(0,bigCount).forEach(x=>{ if(!used.has(x.num)){used.add(x.num);result.push(x.num);} });
+    for (const x of shuffle(srcArr)) {
+      if (result.length>=6) break;
+      if (!used.has(x.num)) { used.add(x.num); result.push(x.num); }
+    }
+    return result.sort((a,b)=>a-b);
+  }
+
+  // 號碼間距盡量平均（跨度>35）
+  function pickSpread(srcArr) {
+    const pool = shuffle(srcArr).map(x=>x.num).sort((a,b)=>a-b);
+    const used = new Set();
+    const result = [];
+    // 先取最小和最大
+    result.push(pool[0]); used.add(pool[0]);
+    result.push(pool[pool.length-1]); used.add(pool[pool.length-1]);
+    // 剩4個盡量均勻分布
+    const candidates = pool.filter(n=>!used.has(n));
+    const step = Math.floor(49/5);
+    [step, step*2, step*3, step*4].forEach(target => {
+      let best = candidates.reduce((a,b) => Math.abs(b-target)<Math.abs(a-target)?b:a, candidates[0]);
+      if (best && !used.has(best)) { used.add(best); result.push(best); }
+    });
+    while (result.length<6) {
+      for (const n of candidates) {
+        if (!used.has(n)) { used.add(n); result.push(n); break; }
+      }
+    }
+    return result.sort((a,b)=>a-b);
+  }
+
+  // 無連續號碼
+  function pickNoConsecutive(srcArr) {
+    const pool = shuffle(srcArr).map(x=>x.num);
+    const used = new Set();
+    const result = [];
+    for (const n of pool) {
+      if (result.length>=6) break;
+      if (used.has(n)) continue;
+      if (result.some(r=>Math.abs(r-n)===1)) continue; // 跳過連續號
+      used.add(n); result.push(n);
+    }
+    // 補缺口
+    for (const n of pool) {
+      if (result.length>=6) break;
+      if (!used.has(n)) { used.add(n); result.push(n); }
+    }
+    return result.sort((a,b)=>a-b);
+  }
+
+  // 加入隨機擾動的評分排序
+  function noisyScore(srcArr, n, noise=0.3) {
+    const noisy = srcArr.map(x=>({...x, s: x.score + Math.random()*noise}))
+                        .sort((a,b)=>b.s-a.s);
     const used = new Set();
     const result = [];
     for (const x of noisy) {
-      if (result.length >= n) break;
+      if (result.length>=n) break;
       if (!used.has(x.num)) { used.add(x.num); result.push(x.num); }
     }
-    while (result.length < n) {
-      const r = Math.floor(Math.random()*49)+1;
-      if (!used.has(r)) { used.add(r); result.push(r); }
-    }
     return result.sort((a,b)=>a-b);
   }
 
-  // 混合兩個 pool，各 take n 個（隨機 shuffle 後取）
-  function mixPools(pool1, poolSize1, take1, pool2, poolSize2, take2) {
-    const p1 = shuffle(pool1.slice(0, poolSize1)).map(x=>x.num);
-    const p2 = shuffle(pool2.slice(0, poolSize2)).map(x=>x.num);
-    const used = new Set();
-    const result = [];
-    let i1=0, i2=0;
-    while (result.length < take1) {
-      if (i1 >= p1.length) break;
-      if (!used.has(p1[i1])) { used.add(p1[i1]); result.push(p1[i1]); }
-      i1++;
-    }
-    while (result.length < take1+take2) {
-      if (i2 >= p2.length) break;
-      if (!used.has(p2[i2])) { used.add(p2[i2]); result.push(p2[i2]); }
-      i2++;
-    }
-    while (result.length < take1+take2) {
-      const r = Math.floor(Math.random()*49)+1;
-      if (!used.has(r)) { used.add(r); result.push(r); }
-    }
-    return result.sort((a,b)=>a-b);
-  }
-
-  // 奇偶指定比例，從 pool 裡隨機取（shuffle 後選）
-  function pickOddEven(oddCount, evenCount, poolSize) {
-    const pool = shuffle(freqArr.slice(0, poolSize));
-    const odds  = pool.filter(x=>x.num%2!==0).slice(0,oddCount*3).map(x=>x.num);
-    const evens = pool.filter(x=>x.num%2===0).slice(0,evenCount*3).map(x=>x.num);
-    const used = new Set();
-    const result = [];
-    shuffle(odds).slice(0,oddCount).forEach(n=>{ if(!used.has(n)){used.add(n);result.push(n);} });
-    shuffle(evens).slice(0,evenCount).forEach(n=>{ if(!used.has(n)){used.add(n);result.push(n);} });
-    while (result.length < oddCount+evenCount) {
-      const r = Math.floor(Math.random()*49)+1;
-      if (!used.has(r)) { used.add(r); result.push(r); }
-    }
-    return result.sort((a,b)=>a-b);
-  }
-
-  // 大小指定比例（小:1-24 大:25-49）
-  function pickBigSmall(smallCount, bigCount, poolSize) {
-    const pool = shuffle(freqArr.slice(0, poolSize));
-    const smalls = pool.filter(x=>x.num<=24).map(x=>x.num);
-    const bigs   = pool.filter(x=>x.num>=25).map(x=>x.num);
-    const used = new Set();
-    const result = [];
-    shuffle(smalls).slice(0,smallCount).forEach(n=>{ if(!used.has(n)){used.add(n);result.push(n);} });
-    shuffle(bigs).slice(0,bigCount).forEach(n=>{ if(!used.has(n)){used.add(n);result.push(n);} });
-    while (result.length < smallCount+bigCount) {
-      const r = Math.floor(Math.random()*49)+1;
-      if (!used.has(r)) { used.add(r); result.push(r); }
-    }
-    return result.sort((a,b)=>a-b);
-  }
-
-  function pickSpecial(excludeArr) {
-    let s;
-    do { s = Math.floor(Math.random()*49)+1; } while(excludeArr.includes(s));
-    return s;
-  }
-
+  // ── 生成 12 組 ────────────────────────────────
   const sets = [];
 
-  // A 熱門優先：前12名隨機取6
-  const A = randFromTop(freqArr, 12, 6);
-  sets.push({label:'A', type:6, strategy:'熱門優先', desc:'出現頻率前12名隨機取6', nums:A, special:pickSpecial(A)});
+  // A 均衡熱門：每區取1個熱門號，第6個補全體最熱
+  const A = tryGenerate(() => pickOnePerZone(
+    freqArr.map(x=>({...x})), freqArr
+  ));
+  sets.push({label:'A', type:6, strategy:'均衡熱門', desc:'每區取1個熱門號，第6個補全體最熱門', nums:A, special:pickSpecial(A)});
 
-  // B 遺漏回補：遺漏前12名隨機取6
-  const B = randFromTop(missArr, 12, 6);
-  sets.push({label:'B', type:6, strategy:'遺漏回補', desc:'遺漏值前12名隨機取6', nums:B, special:pickSpecial(B)});
+  // B 均衡遺漏：每區取1個高遺漏號，第6個補全體最高遺漏
+  const B = tryGenerate(() => pickOnePerZone(
+    missArr.map(x=>({...x})), missArr
+  ));
+  sets.push({label:'B', type:6, strategy:'均衡遺漏', desc:'每區取1個高遺漏號，第6個補最高遺漏', nums:B, special:pickSpecial(B)});
 
-  // C 冷熱3+3：熱門前10 + 遺漏前10 各隨機3
-  const C = mixPools(freqArr,10,3, missArr,10,3);
-  sets.push({label:'C', type:6, strategy:'冷熱3+3', desc:'熱門前10隨機3 + 遺漏前10隨機3', nums:C, special:pickSpecial(C)});
+  // C 冷熱均衡：每區1個，用綜合評分（頻率+遺漏各半）
+  const C = tryGenerate(() => pickOnePerZone(
+    scoreArr.map(x=>({...x})), scoreArr
+  ));
+  sets.push({label:'C', type:6, strategy:'冷熱均衡', desc:'每區1個，頻率+遺漏綜合評分', nums:C, special:pickSpecial(C)});
 
-  // D 奇偶3:3
-  const D = pickOddEven(3, 3, 20);
-  sets.push({label:'D', type:6, strategy:'奇偶3:3', desc:'熱門池奇偶各3碼', nums:D, special:pickSpecial(D)});
+  // D 奇偶3:3 + 區間保證
+  const D = tryGenerate(() => pickOddEven(3, 3,
+    shuffle(scoreArr).slice(0,25)
+  ));
+  sets.push({label:'D', type:6, strategy:'奇偶3:3', desc:'奇偶各3，確保至少4個不同區間', nums:D, special:pickSpecial(D)});
 
-  // E 大小3:3
-  const E = pickBigSmall(3, 3, 20);
-  sets.push({label:'E', type:6, strategy:'大小3:3', desc:'大(25-49)小(1-24)各3碼', nums:E, special:pickSpecial(E)});
+  // E 大小3:3 + 區間保證
+  const E = tryGenerate(() => pickBigSmall(3, 3,
+    shuffle(scoreArr).slice(0,25)
+  ));
+  sets.push({label:'E', type:6, strategy:'大小3:3', desc:'大(25-49)小(1-24)各3，確保區間平衡', nums:E, special:pickSpecial(E)});
 
-  // F 加權隨機①
-  const F = weightedRandom(6);
-  sets.push({label:'F', type:6, strategy:'統計隨機①', desc:'頻率加權+隨機擾動', nums:F, special:pickSpecial(F)});
+  // F 統計加權①：頻率+遺漏評分，加輕微擾動
+  const F = tryGenerate(() => noisyScore(scoreArr, 6, 0.25));
+  sets.push({label:'F', type:6, strategy:'統計加權①', desc:'頻率+遺漏綜合評分，取最高6個（加擾動）', nums:F, special:pickSpecial(F)});
 
-  // G 加權隨機②
-  const G = weightedRandom(6);
-  sets.push({label:'G', type:6, strategy:'統計隨機②', desc:'頻率加權+隨機擾動', nums:G, special:pickSpecial(G)});
+  // G 統計加權②：遺漏權重加重（0.3頻率+0.7遺漏）
+  const scoreArr2 = Array.from({length:49}, (_,i) => {
+    const n = i+1;
+    return { num:n, score:(freq[n]||0)/maxFreq*0.3 + (missing[n]||0)/maxMiss*0.7 };
+  }).sort((a,b)=>b.score-a.score);
+  const G = tryGenerate(() => noisyScore(scoreArr2, 6, 0.25));
+  sets.push({label:'G', type:6, strategy:'統計加權②', desc:'遺漏權重加重（頻率30%+遺漏70%）', nums:G, special:pickSpecial(G)});
 
-  // H 遺漏2+熱門4
-  const H = mixPools(missArr,10,2, freqArr,10,4);
-  sets.push({label:'H', type:6, strategy:'遺漏2+熱門4', desc:'遺漏前10隨機2 + 熱門前10隨機4', nums:H, special:pickSpecial(H)});
+  // H 5區各1+補1：強制每區出1個，第6個取綜合評分最高
+  const H = tryGenerate(() => {
+    const used = new Set();
+    const result = [];
+    for (const z of ZONES) {
+      const pool = shuffle([...freqArr, ...missArr])
+        .filter(x => x.num>=z.min && x.num<=z.max && !used.has(x.num));
+      if (pool.length>0) { used.add(pool[0].num); result.push(pool[0].num); }
+    }
+    for (const x of scoreArr) {
+      if (result.length>=6) break;
+      if (!used.has(x.num)) { used.add(x.num); result.push(x.num); }
+    }
+    return result.sort((a,b)=>a-b);
+  });
+  sets.push({label:'H', type:6, strategy:'5區各1+補1', desc:'5個區間各強制1個，第6個補綜合最高分', nums:H, special:pickSpecial(H)});
 
-  // I 熱門4+遺漏2
-  const I = mixPools(freqArr,10,4, missArr,10,2);
-  sets.push({label:'I', type:6, strategy:'熱門4+遺漏2', desc:'熱門前10隨機4 + 遺漏前10隨機2', nums:I, special:pickSpecial(I)});
+  // I 跨度分散：號碼間距盡量均勻（跨度>35）
+  const I = tryGenerate(() => pickSpread(shuffle(scoreArr).slice(0,30)));
+  sets.push({label:'I', type:6, strategy:'跨度分散', desc:'號碼間距盡量均勻，跨度>35', nums:I, special:pickSpecial(I)});
 
-  // J 奇偶2:4
-  const J = pickOddEven(2, 4, 20);
-  sets.push({label:'J', type:6, strategy:'奇偶2:4', desc:'奇2偶4，偶數偏多', nums:J, special:pickSpecial(J)});
+  // J 無連續號：確保無相鄰連續號碼，每區至少有代表
+  const J = tryGenerate(() => pickNoConsecutive(shuffle(scoreArr).slice(0,30)));
+  sets.push({label:'J', type:6, strategy:'無連續號', desc:'無相鄰連續號碼，每區至少1個', nums:J, special:pickSpecial(J)});
 
-  // K 7碼：熱門前15隨機取7
-  const K = randFromTop(freqArr, 15, 7);
-  sets.push({label:'K', type:7, strategy:'7碼熱門包牌', desc:'頻率前15名隨機取7碼', nums:K, special:pickSpecial(K)});
+  // K 7碼區間包牌：5區各1-2個確保全覆蓋
+  const Knums = (() => {
+    const used = new Set();
+    const result = [];
+    // 每區先取1個熱門
+    for (const z of ZONES) {
+      const pool = shuffle(freqArr.filter(x=>x.num>=z.min&&x.num<=z.max));
+      if (pool.length>0 && !used.has(pool[0].num)) { used.add(pool[0].num); result.push(pool[0].num); }
+    }
+    // 第6、7個取綜合評分最高
+    for (const x of scoreArr) {
+      if (result.length>=7) break;
+      if (!used.has(x.num)) { used.add(x.num); result.push(x.num); }
+    }
+    return result.sort((a,b)=>a-b);
+  })();
+  sets.push({label:'K', type:7, strategy:'7碼區間包牌', desc:'5區各強制1個，再補2個，共7碼全區覆蓋', nums:Knums, special:pickSpecial(Knums)});
 
-  // L 7碼加權隨機
-  const L = weightedRandom(7);
-  sets.push({label:'L', type:7, strategy:'7碼統計包牌', desc:'頻率加權+擾動取7碼', nums:L, special:pickSpecial(L)});
+  // L 7碼綜合評分：頻率+遺漏評分最高7碼（加擾動）
+  const Lnums = noisyScore(scoreArr, 7, 0.2);
+  sets.push({label:'L', type:7, strategy:'7碼綜合評分', desc:'頻率+遺漏評分最高7碼', nums:Lnums, special:pickSpecial(Lnums)});
 
   return sets;
 }
