@@ -750,14 +750,14 @@
 
 <div class="container">
 
-  <!-- Loading State -->
-  <div id="loadingState" class="loading">
+  <!-- Loading State (hidden by default, content shows immediately) -->
+  <div id="loadingState" class="loading" style="display:none">
     <div class="spinner"></div>
     <span>正在從 Google Sheet 載入最新開獎資料...</span>
   </div>
 
-  <!-- Main Content (hidden until loaded) -->
-  <div id="mainContent" style="display:none">
+  <!-- Main Content -->
+  <div id="mainContent">
 
     <!-- Alert -->
     <div class="alert gap-20" id="dataAlert">
@@ -1164,7 +1164,7 @@ function loadDrawsFromSheet() {
       cleanup();
       console.warn('⚠️ Google Sheet JSONP timeout，使用備用資料');
       resolve({ draws: FALLBACK_DRAWS, fromSheet: false });
-    }, 12000);
+    }, 6000);
 
     function cleanup() {
       clearTimeout(timeout);
@@ -2503,43 +2503,39 @@ function showToast(msg, type='info') {
 // INIT
 // =============================================
 
-async function init() {
-  document.getElementById('statusDot').style.background = '#f59e0b';
-  document.getElementById('statusText').textContent = '載入中...';
-
-  // ── Step 1：先用備用資料立刻顯示，不等 Google Sheet ──
-  allDraws = FALLBACK_DRAWS;
+function init() {
+  // ── 立刻顯示備用資料，0秒等待 ──
+  allDraws = [...FALLBACK_DRAWS];
   renderAll();
 
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('mainContent').style.display  = 'block';
   document.getElementById('statusDot').style.background = '#f59e0b';
-  document.getElementById('statusText').textContent = '⏳ 背景更新中...';
+  document.getElementById('statusText').textContent = '⏳ 同步 Google Sheet...';
 
-  // ── Step 2：背景抓 Google Sheet，完成後重新渲染 ──
-  try {
-    const { draws, fromSheet } = await loadDrawsFromSheet();
-    if (fromSheet && draws.length > 0) {
-      const { draws: merged, added } = mergeDraws(allDraws, draws);
-      allDraws = merged;
-      renderAll();
-      document.getElementById('statusDot').style.background = '#10b981';
-      const ld = allDraws[allDraws.length-1];
-      document.getElementById('statusText').textContent =
-        `${ld.date}～${allDraws[0].date} 共${allDraws.length}期 · Google Sheet`;
-      if (added > 0) showToast(`🎉 已更新！新增 ${added} 期最新資料`, 'success');
-      const newest = allDraws[0], oldest = allDraws[allDraws.length-1];
-      document.getElementById('dataAlert').textContent =
-        `⚠️ 資料來源：Google Sheet（${oldest.period}～${newest.period}，${oldest.date}～${newest.date}），即時同步。統計僅供參考，彩票屬機率事件，請理性購買。`;
-    } else {
-      document.getElementById('statusDot').style.background = '#10b981';
-      document.getElementById('statusText').textContent =
-        `備用資料 共${allDraws.length}期（Google Sheet 連線失敗）`;
-    }
-  } catch(e) {
-    document.getElementById('statusDot').style.background = '#10b981';
-    document.getElementById('statusText').textContent = `備用資料 共${allDraws.length}期`;
-  }
+  // ── 完全背景執行，不阻塞任何東西 ──
+  setTimeout(() => {
+    loadDrawsFromSheet().then(({ draws, fromSheet }) => {
+      if (fromSheet && draws.length > 0) {
+        const { draws: merged, added } = mergeDraws(allDraws, draws);
+        allDraws = merged;
+        renderAll();
+        document.getElementById('statusDot').style.background = '#10b981';
+        const ld = allDraws[allDraws.length-1];
+        document.getElementById('statusText').textContent =
+          `${ld.date}～${allDraws[0].date} 共${allDraws.length}期 · Google Sheet`;
+        if (added > 0) showToast(`🎉 已更新！新增 ${added} 期最新資料`, 'success');
+        const newest = allDraws[0], oldest = allDraws[allDraws.length-1];
+        document.getElementById('dataAlert').textContent =
+          `⚠️ 資料來源：Google Sheet（${oldest.period}～${newest.period}，${oldest.date}～${newest.date}），即時同步。統計僅供參考，彩票屬機率事件，請理性購買。`;
+      } else {
+        document.getElementById('statusDot').style.background = '#f59e0b';
+        document.getElementById('statusText').textContent =
+          `備用資料 共${allDraws.length}期 · Google Sheet 連線失敗`;
+      }
+    }).catch(() => {
+      document.getElementById('statusDot').style.background = '#f59e0b';
+      document.getElementById('statusText').textContent = `備用資料 共${allDraws.length}期`;
+    });
+  }, 100);
 }
 
 function renderAll() {
