@@ -334,12 +334,16 @@
     padding: 4px;
     border-radius: var(--radius-sm);
     margin-bottom: 20px;
-    flex-wrap: wrap;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+  .tabs::-webkit-scrollbar { display: none; }
   .tab {
-    flex: 1;
-    min-width: 80px;
-    padding: 8px 12px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 8px 14px;
     border-radius: 6px;
     font-size: 12px;
     font-weight: 500;
@@ -794,11 +798,11 @@
     <!-- Tabs for Main Analysis -->
     <div class="gap-24">
       <div class="tabs">
-        <button class="tab active" onclick="showTab('freq')">📈 頻率統計</button>
+        <button class="tab active" onclick="showTab('freq')">📈 頻率</button>
         <button class="tab" onclick="showTab('missing')">⏳ 遺漏值</button>
-        <button class="tab" onclick="showTab('streak')">🔥 連莊分析</button>
-        <button class="tab" onclick="showTab('gap')">📐 斷區分析</button>
-        <button class="tab" onclick="showTab('sum')">➕ 和值分析</button>
+        <button class="tab" onclick="showTab('streak')">🔥 連莊</button>
+        <button class="tab" onclick="showTab('gap')">📐 斷區</button>
+        <button class="tab" onclick="showTab('sum')">➕ 和值</button>
         <button class="tab" onclick="showTab('oddeven')">⚖️ 奇偶比</button>
         <button class="tab" onclick="showTab('headtail')">🔢 頭尾數</button>
         <button class="tab" onclick="showTab('suggest')">💡 建議號碼</button>
