@@ -2331,36 +2331,6 @@ function mergeDraws(base, newDraws) {
 }
 
 // 更新所有統計並重新渲染
-function reRenderAll() {
-  const freq    = computeFrequency(allDraws, allDraws.length);
-  const missing = computeMissing(allDraws);
-  const maxMiss = computeHistoricMaxMissing(allDraws);
-  const streaks = computeStreaks(allDraws);
-  const zones   = computeGapAnalysis(allDraws);
-
-  renderLatestDraw(allDraws[0]);
-  renderDrawStats(allDraws[0], allDraws);
-  renderFrequency(freq);
-  renderMissing(missing, maxMiss);
-  renderStreaks(streaks);
-  renderGapAnalysis(zones, allDraws);
-  renderSumAnalysis(allDraws);
-  renderOddEven(allDraws);
-  renderHeadTail(allDraws);
-  renderSuggestions(freq, missing);
-  renderHistory();
-
-  const lastDraw = allDraws[allDraws.length - 1];
-  document.getElementById('statusText').textContent =
-    `真實資料 ${lastDraw.date} ～ ${allDraws[0].date}，共 ${allDraws.length} 期`;
-
-  // 更新 alert 說明
-  const newest = allDraws[0];
-  const oldest = allDraws[allDraws.length-1];
-  document.getElementById('dataAlert').textContent =
-    `⚠️ 本系統資料來源：台灣彩券官網（第${oldest.period}～${newest.period}，${oldest.date}～${newest.date}），統計數據僅供參考，彩票開獎屬機率事件，請理性購買。`;
-}
-
 // =============================================
 // 重新整理：重載 draws.json
 // =============================================
@@ -2391,7 +2361,7 @@ async function refreshData() {
       allDraws = merged;
       dot.style.background = '#10b981';
       if (added > 0) {
-        reRenderAll();
+        renderAll();
         showToast(`🎉 成功更新！新增 ${added} 期最新開獎號碼`, 'success');
       } else {
         const ld = allDraws[allDraws.length-1];
@@ -2501,7 +2471,7 @@ function submitManualInput() {
   document.getElementById('manualInputModal').remove();
 
   if (added > 0) {
-    reRenderAll();
+    renderAll();
     showToast(`✅ 成功新增第${period}期開獎號碼！`, 'success');
     document.getElementById('statusDot').style.background = '#10b981';
   } else {
@@ -2537,10 +2507,42 @@ async function init() {
   document.getElementById('statusDot').style.background = '#f59e0b';
   document.getElementById('statusText').textContent = '載入中...';
 
-  // 從 Google Sheet 載入最新開獎資料
-  const { draws, updatedAt, fromSheet } = await loadDrawsFromSheet();
-  allDraws = draws;
+  // ── Step 1：先用備用資料立刻顯示，不等 Google Sheet ──
+  allDraws = FALLBACK_DRAWS;
+  renderAll();
 
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('mainContent').style.display  = 'block';
+  document.getElementById('statusDot').style.background = '#f59e0b';
+  document.getElementById('statusText').textContent = '⏳ 背景更新中...';
+
+  // ── Step 2：背景抓 Google Sheet，完成後重新渲染 ──
+  try {
+    const { draws, fromSheet } = await loadDrawsFromSheet();
+    if (fromSheet && draws.length > 0) {
+      const { draws: merged, added } = mergeDraws(allDraws, draws);
+      allDraws = merged;
+      renderAll();
+      document.getElementById('statusDot').style.background = '#10b981';
+      const ld = allDraws[allDraws.length-1];
+      document.getElementById('statusText').textContent =
+        `${ld.date}～${allDraws[0].date} 共${allDraws.length}期 · Google Sheet`;
+      if (added > 0) showToast(`🎉 已更新！新增 ${added} 期最新資料`, 'success');
+      const newest = allDraws[0], oldest = allDraws[allDraws.length-1];
+      document.getElementById('dataAlert').textContent =
+        `⚠️ 資料來源：Google Sheet（${oldest.period}～${newest.period}，${oldest.date}～${newest.date}），即時同步。統計僅供參考，彩票屬機率事件，請理性購買。`;
+    } else {
+      document.getElementById('statusDot').style.background = '#10b981';
+      document.getElementById('statusText').textContent =
+        `備用資料 共${allDraws.length}期（Google Sheet 連線失敗）`;
+    }
+  } catch(e) {
+    document.getElementById('statusDot').style.background = '#10b981';
+    document.getElementById('statusText').textContent = `備用資料 共${allDraws.length}期`;
+  }
+}
+
+function renderAll() {
   const freq    = computeFrequency(allDraws, allDraws.length);
   const missing = computeMissing(allDraws);
   const maxMiss = computeHistoricMaxMissing(allDraws);
@@ -2558,22 +2560,6 @@ async function init() {
   renderHeadTail(allDraws);
   renderSuggestions(freq, missing);
   renderHistory();
-
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('mainContent').style.display  = 'block';
-
-  document.getElementById('statusDot').style.background = '#10b981';
-  const ld = allDraws[allDraws.length - 1];
-  document.getElementById('statusText').textContent =
-    `${ld.date}～${allDraws[0].date} 共${allDraws.length}期` +
-    (fromSheet ? ' · 來自 Google Sheet' : ' · 備用資料');
-
-  const newest = allDraws[0];
-  const oldest = allDraws[allDraws.length-1];
-  document.getElementById('dataAlert').textContent =
-    `⚠️ 資料來源：Google Sheet（${oldest.period}～${newest.period}，${oldest.date}～${newest.date}）` +
-    (fromSheet ? '，即時同步' : '，目前顯示備用資料') +
-    '。統計僅供參考，彩票屬機率事件，請理性購買。';
 }
 
 // =============================================
