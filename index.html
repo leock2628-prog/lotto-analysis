@@ -976,8 +976,8 @@
               <tr><td class="num-col">F</td><td style="color:var(--accent)">6碼</td><td>統計加權①</td><td style="color:var(--text2)">頻率50%+遺漏50%綜合評分最高6個</td></tr>
               <tr><td class="num-col">G</td><td style="color:var(--accent)">6碼</td><td>統計加權②</td><td style="color:var(--text2)">遺漏權重加重（頻率30%+遺漏70%）</td></tr>
               <tr><td class="num-col">H</td><td style="color:var(--accent)">6碼</td><td>5區各1+補1</td><td style="color:var(--text2)">5個區間各強制1個，第6個補綜合最高分</td></tr>
-              <tr><td class="num-col">I</td><td style="color:var(--accent)">6碼</td><td>跨度分散</td><td style="color:var(--text2)">號碼間距盡量均勻，跨度大於35</td></tr>
-              <tr><td class="num-col">J</td><td style="color:var(--accent)">6碼</td><td>無連續號</td><td style="color:var(--text2)">確保無相鄰連續號碼，每區至少1個</td></tr>
+              <tr><td class="num-col">I</td><td style="color:var(--accent)">6碼</td><td>冷門逆轉 🏆</td><td style="color:var(--text2)">頻率最低6個號碼，回測平均命中率第一</td></tr>
+              <tr><td class="num-col">J</td><td style="color:var(--accent)">6碼</td><td>2熱+4冷 🏆</td><td style="color:var(--text2)">2個最熱門+4個最冷門，回測命中4+最高</td></tr>
               <tr><td class="num-col">K</td><td style="color:var(--gold)">7碼</td><td>7碼區間包牌</td><td style="color:var(--text2)">5區各強制1個再補2個，全區覆蓋</td><td style="color:var(--text3);font-size:11px">7注合1組</td></tr>
               <tr><td class="num-col">L</td><td style="color:var(--gold)">7碼</td><td>7碼綜合評分</td><td style="color:var(--text2)">頻率+遺漏綜合評分最高7碼（加擾動）</td><td style="color:var(--text3);font-size:11px">7注合1組</td></tr>
             </tbody>
@@ -1090,7 +1090,7 @@
   </div><!-- /mainContent -->
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" onerror="console.warn('Chart.js 載入失敗')"></script>
 <script>
 // =============================================
 // DATA ENGINE
@@ -1691,13 +1691,36 @@ function generateSuggestions(freq, missing) {
   });
   sets.push({label:'H', type:6, strategy:'5區各1+補1', desc:'5個區間各強制1個，第6個補綜合最高分', nums:H, special:pickSpecial(H)});
 
-  // I 跨度分散：號碼間距盡量均勻（跨度>35）
-  const I = tryGenerate(() => pickSpread(shuffle(scoreArr).slice(0,30)));
-  sets.push({label:'I', type:6, strategy:'跨度分散', desc:'號碼間距盡量均勻，跨度>35', nums:I, special:pickSpecial(I)});
+  // I 冷門逆轉：選頻率最低的6個號碼（回測命中率最佳）
+  const coldPool = [...freqArr].sort((a,b) => a.freq - b.freq); // 頻率由低到高
+  const I = tryGenerate(() => {
+    // 加輕微擾動讓每次重新生成不完全相同
+    const noisy = coldPool.map(x => ({...x, s: x.freq + Math.random()*0.5}))
+                          .sort((a,b) => a.s - b.s);
+    const used = new Set();
+    const result = [];
+    for (const x of noisy) {
+      if (result.length >= 6) break;
+      if (!used.has(x.num)) { used.add(x.num); result.push(x.num); }
+    }
+    return result.sort((a,b) => a-b);
+  });
+  sets.push({label:'I', type:6, strategy:'冷門逆轉', desc:'頻率最低6個號碼，回測命中率第一', nums:I, special:pickSpecial(I)});
 
-  // J 無連續號：確保無相鄰連續號碼，每區至少有代表
-  const J = tryGenerate(() => pickNoConsecutive(shuffle(scoreArr).slice(0,30)));
-  sets.push({label:'J', type:6, strategy:'無連續號', desc:'無相鄰連續號碼，每區至少1個', nums:J, special:pickSpecial(J)});
+  // J 2熱+4冷：2個最熱門 + 4個最冷門（回測命中4+最佳）
+  const J = tryGenerate(() => {
+    const hotPool  = shuffle([...freqArr].sort((a,b) => b.freq - a.freq).slice(0, 8));
+    const coldPool2 = shuffle([...freqArr].sort((a,b) => a.freq - b.freq).slice(0, 12));
+    const used = new Set();
+    const result = [];
+    hotPool.slice(0, 2).forEach(x => { if (!used.has(x.num)) { used.add(x.num); result.push(x.num); } });
+    for (const x of coldPool2) {
+      if (result.length >= 6) break;
+      if (!used.has(x.num)) { used.add(x.num); result.push(x.num); }
+    }
+    return result.sort((a,b) => a-b);
+  });
+  sets.push({label:'J', type:6, strategy:'2熱+4冷', desc:'2個熱門號+4個冷門號，回測命中4+最高', nums:J, special:pickSpecial(J)});
 
   // K 7碼區間包牌：5區各1-2個確保全覆蓋
   const Knums = (() => {
@@ -2515,7 +2538,7 @@ function showToast(msg, type='info') {
 function init() {
   // ── 立刻顯示備用資料，0秒等待 ──
   allDraws = [...FALLBACK_DRAWS];
-  renderAll();
+  try { renderAll(); } catch(e) { console.error('renderAll 初始化錯誤:', e); }
 
   document.getElementById('statusDot').style.background = '#f59e0b';
   document.getElementById('statusText').textContent = '⏳ 同步 Google Sheet...';
@@ -2526,7 +2549,7 @@ function init() {
       if (fromSheet && draws.length > 0) {
         const { draws: merged, added } = mergeDraws(allDraws, draws);
         allDraws = merged;
-        renderAll();
+        try { renderAll(); } catch(e) { console.error('renderAll 更新錯誤:', e); }
         document.getElementById('statusDot').style.background = '#10b981';
         const ld = allDraws[allDraws.length-1];
         document.getElementById('statusText').textContent =
@@ -2744,7 +2767,7 @@ function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows,
   // ── 策略排行表 ────────────────────────────────
   const strategyNames = {
     A:'均衡熱門', B:'均衡遺漏', C:'冷熱均衡', D:'奇偶3:3', E:'大小3:3',
-    F:'統計加權①', G:'統計加權②', H:'5區各1+補1', I:'跨度分散', J:'無連續號',
+    F:'統計加權①', G:'統計加權②', H:'5區各1+補1', I:'冷門逆轉', J:'2熱+4冷',
     K:'7碼區間包牌', L:'7碼綜合評分'
   };
 
@@ -2858,11 +2881,7 @@ function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows,
   }).join('');
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init, { once: true });
-} else {
-  init();
-}
+window.onload = function() { init(); };
 </script>
 </body>
 </html>
