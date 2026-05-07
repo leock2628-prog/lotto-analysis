@@ -968,16 +968,16 @@
           <table class="analysis-table">
             <thead><tr><th>組別</th><th>碼數</th><th>策略</th><th>說明</th><th>共同條件</th></tr></thead>
             <tbody>
-              <tr><td class="num-col">A</td><td style="color:var(--accent)">6碼</td><td>均衡熱門</td><td style="color:var(--text2)">每區各取1個熱門號，第6個補全體最熱門</td><td rowspan="10" style="color:var(--text3);font-size:11px;vertical-align:top;padding-top:10px;line-height:1.8">✅ 和值 100～200<br>✅ 不全奇或全偶<br>✅ 至少4個不同區間</td></tr>
-              <tr><td class="num-col">B</td><td style="color:var(--accent)">6碼</td><td>均衡遺漏</td><td style="color:var(--text2)">每區各取1個高遺漏號，第6個補最高遺漏</td></tr>
-              <tr><td class="num-col">C</td><td style="color:var(--accent)">6碼</td><td>冷熱均衡</td><td style="color:var(--text2)">每區1個，頻率+遺漏綜合評分選取</td></tr>
-              <tr><td class="num-col">D</td><td style="color:var(--accent)">6碼</td><td>奇偶 3:3</td><td style="color:var(--text2)">奇偶各3，確保至少4個不同區間</td></tr>
-              <tr><td class="num-col">E</td><td style="color:var(--accent)">6碼</td><td>大小 3:3</td><td style="color:var(--text2)">大(25-49)小(1-24)各3，確保區間平衡</td></tr>
-              <tr><td class="num-col">F</td><td style="color:var(--accent)">6碼</td><td>統計加權①</td><td style="color:var(--text2)">頻率50%+遺漏50%綜合評分最高6個</td></tr>
-              <tr><td class="num-col">G</td><td style="color:var(--accent)">6碼</td><td>統計加權②</td><td style="color:var(--text2)">遺漏權重加重（頻率30%+遺漏70%）</td></tr>
-              <tr><td class="num-col">H</td><td style="color:var(--accent)">6碼</td><td>5區各1+補1</td><td style="color:var(--text2)">5個區間各強制1個，第6個補綜合最高分</td></tr>
-              <tr><td class="num-col">I</td><td style="color:var(--accent)">6碼</td><td>冷門逆轉 🏆</td><td style="color:var(--text2)">頻率最低6個號碼，回測平均命中率第一</td></tr>
-              <tr><td class="num-col">J</td><td style="color:var(--accent)">6碼</td><td>2熱+4冷 🏆</td><td style="color:var(--text2)">2個最熱門+4個最冷門，回測命中4+最高</td></tr>
+              <tr><td class="num-col">A</td><td style="color:var(--accent)">6碼</td><td>遺漏加權① 🏆</td><td style="color:var(--text2)">遺漏70%+頻率30%，回測最穩定策略</td><td rowspan="10" style="color:var(--text3);font-size:11px;vertical-align:top;padding-top:10px;line-height:1.8">✅ 和值 100～200<br>✅ 不全奇或全偶<br>✅ 至少4個不同區間</td></tr>
+              <tr><td class="num-col">B</td><td style="color:var(--accent)">6碼</td><td>冷門逆轉① 🏆</td><td style="color:var(--text2)">頻率最低6個號碼，回測平均命中率第一</td></tr>
+              <tr><td class="num-col">C</td><td style="color:var(--accent)">6碼</td><td>2熱+4冷① 🏆</td><td style="color:var(--text2)">2個最熱門+4個最冷門，回測命中4+最高</td></tr>
+              <tr><td class="num-col">D</td><td style="color:var(--accent)">6碼</td><td>遺漏Top6</td><td style="color:var(--text2)">遺漏值最高6個號碼，期待回補效應</td></tr>
+              <tr><td class="num-col">E</td><td style="color:var(--accent)">6碼</td><td>遺漏3+熱3</td><td style="color:var(--text2)">3個高遺漏+3個高頻率，冷熱均衡</td></tr>
+              <tr><td class="num-col">F</td><td style="color:var(--accent)">6碼</td><td>5區均衡-遺漏</td><td style="color:var(--text2)">每區各取最高遺漏號，確保5區覆蓋</td></tr>
+              <tr><td class="num-col">G</td><td style="color:var(--accent)">6碼</td><td>遺漏加權②</td><td style="color:var(--text2)">遺漏70%+頻率30%，不同擾動組合</td></tr>
+              <tr><td class="num-col">H</td><td style="color:var(--accent)">6碼</td><td>2熱+4冷②</td><td style="color:var(--text2)">2個最熱門+4個最冷門，不同擾動組合</td></tr>
+              <tr><td class="num-col">I</td><td style="color:var(--accent)">6碼</td><td>冷門逆轉② 🏆</td><td style="color:var(--text2)">頻率最低6個號碼，不同擾動組合</td></tr>
+              <tr><td class="num-col">J</td><td style="color:var(--accent)">6碼</td><td>2熱+4冷③ 🏆</td><td style="color:var(--text2)">2個最熱門+4個最冷門，更大擾動範圍</td></tr>
               <tr><td class="num-col">K</td><td style="color:var(--gold)">7碼</td><td>7碼區間包牌</td><td style="color:var(--text2)">5區各強制1個再補2個，全區覆蓋</td><td style="color:var(--text3);font-size:11px">7注合1組</td></tr>
               <tr><td class="num-col">L</td><td style="color:var(--gold)">7碼</td><td>7碼綜合評分</td><td style="color:var(--text2)">頻率+遺漏綜合評分最高7碼（加擾動）</td><td style="color:var(--text3);font-size:11px">7注合1組</td></tr>
             </tbody>
@@ -1629,67 +1629,87 @@ function generateSuggestions(freq, missing) {
     return result.sort((a,b)=>a-b);
   }
 
-  // ── 生成 12 組 ────────────────────────────────
+  // ── 生成 12 組（依回測排名由高到低配置）────────
   const sets = [];
 
-  // A 均衡熱門：每區取1個熱門號，第6個補全體最熱
-  const A = tryGenerate(() => pickOnePerZone(
-    freqArr.map(x=>({...x})), freqArr
-  ));
-  sets.push({label:'A', type:6, strategy:'均衡熱門', desc:'每區取1個熱門號，第6個補全體最熱門', nums:A, special:pickSpecial(A)});
-
-  // B 均衡遺漏：每區取1個高遺漏號，第6個補全體最高遺漏
-  const B = tryGenerate(() => pickOnePerZone(
-    missArr.map(x=>({...x})), missArr
-  ));
-  sets.push({label:'B', type:6, strategy:'均衡遺漏', desc:'每區取1個高遺漏號，第6個補最高遺漏', nums:B, special:pickSpecial(B)});
-
-  // C 冷熱均衡：每區1個，用綜合評分（頻率+遺漏各半）
-  const C = tryGenerate(() => pickOnePerZone(
-    scoreArr.map(x=>({...x})), scoreArr
-  ));
-  sets.push({label:'C', type:6, strategy:'冷熱均衡', desc:'每區1個，頻率+遺漏綜合評分', nums:C, special:pickSpecial(C)});
-
-  // D 奇偶3:3 + 區間保證
-  const D = tryGenerate(() => pickOddEven(3, 3,
-    shuffle(scoreArr).slice(0,25)
-  ));
-  sets.push({label:'D', type:6, strategy:'奇偶3:3', desc:'奇偶各3，確保至少4個不同區間', nums:D, special:pickSpecial(D)});
-
-  // E 大小3:3 + 區間保證
-  const E = tryGenerate(() => pickBigSmall(3, 3,
-    shuffle(scoreArr).slice(0,25)
-  ));
-  sets.push({label:'E', type:6, strategy:'大小3:3', desc:'大(25-49)小(1-24)各3，確保區間平衡', nums:E, special:pickSpecial(E)});
-
-  // F 統計加權①：頻率+遺漏評分，加輕微擾動
-  const F = tryGenerate(() => noisyScore(scoreArr, 6, 0.25));
-  sets.push({label:'F', type:6, strategy:'統計加權①', desc:'頻率+遺漏綜合評分，取最高6個（加擾動）', nums:F, special:pickSpecial(F)});
-
-  // G 統計加權②：遺漏權重加重（0.3頻率+0.7遺漏）
+  // 遺漏加重評分（頻率30%+遺漏70%）→ 回測排名前段
   const scoreArr2 = Array.from({length:49}, (_,i) => {
     const n = i+1;
     return { num:n, score:(freq[n]||0)/maxFreq*0.3 + (missing[n]||0)/maxMiss*0.7 };
   }).sort((a,b)=>b.score-a.score);
-  const G = tryGenerate(() => noisyScore(scoreArr2, 6, 0.25));
-  sets.push({label:'G', type:6, strategy:'統計加權②', desc:'遺漏權重加重（頻率30%+遺漏70%）', nums:G, special:pickSpecial(G)});
 
-  // H 5區各1+補1：強制每區出1個，第6個取綜合評分最高
-  const H = tryGenerate(() => {
-    const used = new Set();
-    const result = [];
-    for (const z of ZONES) {
-      const pool = shuffle([...freqArr, ...missArr])
-        .filter(x => x.num>=z.min && x.num<=z.max && !used.has(x.num));
-      if (pool.length>0) { used.add(pool[0].num); result.push(pool[0].num); }
-    }
-    for (const x of scoreArr) {
-      if (result.length>=6) break;
+  // 冷門號池（頻率由低到高）
+  const coldArr = [...freqArr].sort((a,b) => a.freq - b.freq);
+
+  // 加擾動取前 N 名（確保每次重新生成有不同結果）
+  function noisyTop(arr, n, noise=0.4) {
+    const noisy = arr.map(x => ({...x, s: (x.score ?? x.freq ?? 0) + Math.random()*noise}))
+                     .sort((a,b) => b.s - a.s);
+    const used = new Set(); const result = [];
+    for (const x of noisy) {
+      if (result.length >= n) break;
       if (!used.has(x.num)) { used.add(x.num); result.push(x.num); }
     }
-    return result.sort((a,b)=>a-b);
+    return result.sort((a,b) => a-b);
+  }
+
+  // 冷門加擾動（低頻率方向）
+  function noisyCold(arr, n, noise=0.5) {
+    const noisy = arr.map(x => ({...x, s: (x.freq ?? 0) + Math.random()*noise}))
+                     .sort((a,b) => a.s - b.s);
+    const used = new Set(); const result = [];
+    for (const x of noisy) {
+      if (result.length >= n) break;
+      if (!used.has(x.num)) { used.add(x.num); result.push(x.num); }
+    }
+    return result.sort((a,b) => a-b);
+  }
+
+  // A 遺漏加權①：遺漏70%+頻率30%（回測表現最穩定）
+  const A = tryGenerate(() => noisyTop(scoreArr2, 6, 0.3));
+  sets.push({label:'A', type:6, strategy:'遺漏加權①', desc:'遺漏70%+頻率30%，回測最穩定', nums:A, special:pickSpecial(A)});
+
+  // B 冷門逆轉①：頻率最低6碼（回測平均命中第一）
+  const B = tryGenerate(() => noisyCold(coldArr, 6, 0.6));
+  sets.push({label:'B', type:6, strategy:'冷門逆轉①', desc:'頻率最低6個號碼，回測命中率第一', nums:B, special:pickSpecial(B)});
+
+  // C 2熱+4冷①：2個最熱+4個最冷（回測命中4+最高）
+  const C = tryGenerate(() => {
+    const hot2  = noisyTop(freqArr, 2, 0.3);
+    const cold4 = noisyCold(coldArr.filter(x => !hot2.includes(x.num)), 4, 0.5);
+    return [...hot2, ...cold4].sort((a,b) => a-b);
   });
-  sets.push({label:'H', type:6, strategy:'5區各1+補1', desc:'5個區間各強制1個，第6個補綜合最高分', nums:H, special:pickSpecial(H)});
+  sets.push({label:'C', type:6, strategy:'2熱+4冷①', desc:'2個最熱門+4個最冷門，回測命中4+最高', nums:C, special:pickSpecial(C)});
+
+  // D 遺漏Top6：遺漏值最高的6個號碼
+  const D = tryGenerate(() => noisyTop(missArr.map(x=>({...x, score:x.miss})), 6, 0.4));
+  sets.push({label:'D', type:6, strategy:'遺漏Top6', desc:'遺漏值最高6個號碼，等待回補', nums:D, special:pickSpecial(D)});
+
+  // E 遺漏3+熱3：3個高遺漏+3個高頻率
+  const E = tryGenerate(() => {
+    const miss3 = noisyTop(missArr.map(x=>({...x, score:x.miss})), 3, 0.4);
+    const hot3  = noisyTop(freqArr.filter(x => !miss3.includes(x.num)), 3, 0.3);
+    return [...miss3, ...hot3].sort((a,b) => a-b);
+  });
+  sets.push({label:'E', type:6, strategy:'遺漏3+熱3', desc:'3個高遺漏+3個高頻率，冷熱均衡', nums:E, special:pickSpecial(E)});
+
+  // F 5區均衡-遺漏：每區取最高遺漏號（跨區命中率佳）
+  const F = tryGenerate(() => pickOnePerZone(
+    missArr.map(x=>({...x})), missArr
+  ));
+  sets.push({label:'F', type:6, strategy:'5區均衡-遺漏', desc:'每區各取最高遺漏號，確保5區覆蓋', nums:F, special:pickSpecial(F)});
+
+  // G 遺漏加權②：另一組遺漏加重（不同擾動）
+  const G = tryGenerate(() => noisyTop(scoreArr2, 6, 0.5));
+  sets.push({label:'G', type:6, strategy:'遺漏加權②', desc:'遺漏70%+頻率30%，不同擾動組合', nums:G, special:pickSpecial(G)});
+
+  // H 2熱+4冷②：另一組冷熱組合（更大擾動範圍）
+  const H = tryGenerate(() => {
+    const hot2  = noisyTop(freqArr, 2, 0.5);
+    const cold4 = noisyCold(coldArr.filter(x => !hot2.includes(x.num)), 4, 0.8);
+    return [...hot2, ...cold4].sort((a,b) => a-b);
+  });
+  sets.push({label:'H', type:6, strategy:'2熱+4冷②', desc:'2個最熱門+4個最冷門，不同擾動組合', nums:H, special:pickSpecial(H)});
 
   // I 冷門逆轉：選頻率最低的6個號碼（回測命中率最佳）
   const coldPool = [...freqArr].sort((a,b) => a.freq - b.freq); // 頻率由低到高
@@ -2766,8 +2786,8 @@ function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows,
 
   // ── 策略排行表 ────────────────────────────────
   const strategyNames = {
-    A:'均衡熱門', B:'均衡遺漏', C:'冷熱均衡', D:'奇偶3:3', E:'大小3:3',
-    F:'統計加權①', G:'統計加權②', H:'5區各1+補1', I:'冷門逆轉', J:'2熱+4冷',
+    A:'遺漏加權①', B:'冷門逆轉①', C:'2熱+4冷①', D:'遺漏Top6', E:'遺漏3+熱3',
+    F:'5區均衡-遺漏', G:'遺漏加權②', H:'2熱+4冷②', I:'冷門逆轉②', J:'2熱+4冷③',
     K:'7碼區間包牌', L:'7碼綜合評分'
   };
 
