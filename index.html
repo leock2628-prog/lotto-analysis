@@ -761,7 +761,7 @@
 
     <!-- Alert -->
     <div class="alert gap-20" id="dataAlert">
-      ⚠️ 本系統資料來源：台灣彩券官網（第115001～115045期，2026/01/02～2026/04/17），統計數據僅供參考，彩票開獎屬機率事件，請理性購買。
+      ⚠️ 資料載入中，統計數據僅供參考，彩票開獎屬機率事件，請理性購買。
     </div>
 
     <!-- Latest Draw + Quick Stats -->
@@ -810,7 +810,7 @@
 
       <!-- Frequency Tab -->
       <div id="tab-freq" class="tab-content">
-        <div class="section-title">號碼出現頻率 <span class="section-badge">2026年全45期真實資料</span></div>
+        <div class="section-title">號碼出現頻率 <span class="section-badge" id="freqPeriodBadge">載入中</span></div>
         <div class="flex-row gap-12" style="margin-bottom:12px">
           <div class="legend-item"><div class="legend-dot" style="background:var(--hot)"></div>熱門號碼 (前10)</div>
           <div class="legend-item"><div class="legend-dot" style="background:var(--cold)"></div>冷門號碼 (後10)</div>
@@ -827,7 +827,7 @@
 
       <!-- Missing Values Tab -->
       <div id="tab-missing" class="tab-content" style="display:none">
-        <div class="section-title">遺漏值分析 <span class="section-badge">距上次出現期數（全45期）</span></div>
+        <div class="section-title">遺漏值分析 <span class="section-badge" id="missingPeriodBadge">載入中</span></div>
         <div class="alert">
           遺漏值越大，表示該號碼越久未出現。統計上遺漏值回補的概率並不必然更高，僅供參考。
         </div>
@@ -959,7 +959,7 @@
       <div id="tab-suggest" class="tab-content" style="display:none">
         <div class="section-title">💡 建議號碼 <span class="section-badge">綜合統計分析</span></div>
         <div class="alert">
-          以下號碼由統計演算法根據頻率、遺漏值、奇偶比、和值等指標綜合生成，不代表必中。6碼組每注50元，7碼包牌每組350元（含7種6碼組合）。
+        以下號碼由統計演算法根據頻率、遺漏值、奇偶比、和值等指標綜合生成，不代表必中。目前策略全數改為6碼組，每注50元。
         </div>
         <div id="suggestSets"></div>
 
@@ -968,18 +968,18 @@
           <table class="analysis-table">
             <thead><tr><th>組別</th><th>碼數</th><th>策略</th><th>說明</th><th>共同條件</th></tr></thead>
             <tbody>
-              <tr><td class="num-col">A</td><td style="color:var(--accent)">6碼</td><td>遺漏加權① 🏆</td><td style="color:var(--text2)">遺漏70%+頻率30%，回測最穩定策略</td><td rowspan="10" style="color:var(--text3);font-size:11px;vertical-align:top;padding-top:10px;line-height:1.8">✅ 和值 100～200<br>✅ 不全奇或全偶<br>✅ 至少4個不同區間</td></tr>
-              <tr><td class="num-col">B</td><td style="color:var(--accent)">6碼</td><td>冷門逆轉① 🏆</td><td style="color:var(--text2)">頻率最低6個號碼，回測平均命中率第一</td></tr>
-              <tr><td class="num-col">C</td><td style="color:var(--accent)">6碼</td><td>2熱+4冷① 🏆</td><td style="color:var(--text2)">2個最熱門+4個最冷門，回測命中4+最高</td></tr>
-              <tr><td class="num-col">D</td><td style="color:var(--accent)">6碼</td><td>遺漏Top6</td><td style="color:var(--text2)">遺漏值最高6個號碼，期待回補效應</td></tr>
-              <tr><td class="num-col">E</td><td style="color:var(--accent)">6碼</td><td>遺漏3+熱3</td><td style="color:var(--text2)">3個高遺漏+3個高頻率，冷熱均衡</td></tr>
-              <tr><td class="num-col">F</td><td style="color:var(--accent)">6碼</td><td>5區均衡-遺漏</td><td style="color:var(--text2)">每區各取最高遺漏號，確保5區覆蓋</td></tr>
-              <tr><td class="num-col">G</td><td style="color:var(--accent)">6碼</td><td>遺漏加權②</td><td style="color:var(--text2)">遺漏70%+頻率30%，不同擾動組合</td></tr>
-              <tr><td class="num-col">H</td><td style="color:var(--accent)">6碼</td><td>2熱+4冷②</td><td style="color:var(--text2)">2個最熱門+4個最冷門，不同擾動組合</td></tr>
-              <tr><td class="num-col">I</td><td style="color:var(--accent)">6碼</td><td>冷門逆轉② 🏆</td><td style="color:var(--text2)">頻率最低6個號碼，不同擾動組合</td></tr>
-              <tr><td class="num-col">J</td><td style="color:var(--accent)">6碼</td><td>2熱+4冷③ 🏆</td><td style="color:var(--text2)">2個最熱門+4個最冷門，更大擾動範圍</td></tr>
-              <tr><td class="num-col">K</td><td style="color:var(--gold)">7碼</td><td>7碼區間包牌</td><td style="color:var(--text2)">5區各強制1個再補2個，全區覆蓋</td><td style="color:var(--text3);font-size:11px">7注合1組</td></tr>
-              <tr><td class="num-col">L</td><td style="color:var(--gold)">7碼</td><td>7碼綜合評分</td><td style="color:var(--text2)">頻率+遺漏綜合評分最高7碼（加擾動）</td><td style="color:var(--text3);font-size:11px">7注合1組</td></tr>
+              <tr><td class="num-col">A</td><td style="color:var(--accent)">6碼</td><td>區間熱15</td><td style="color:var(--text2)">最近15期各區熱號，保留區間覆蓋</td><td rowspan="12" style="color:var(--text3);font-size:11px;vertical-align:top;padding-top:10px;line-height:1.8">✅ 優先控和值與區間<br>✅ 不全奇或全偶<br>✅ 多版路分散覆蓋<br>✅ 12組全為6碼</td></tr>
+              <tr><td class="num-col">B</td><td style="color:var(--accent)">6碼</td><td>2熱+4冷40</td><td style="color:var(--text2)">最近40期2熱+4冷，中期冷熱混合</td></tr>
+              <tr><td class="num-col">C</td><td style="color:var(--accent)">6碼</td><td>極短冷號5</td><td style="color:var(--text2)">最近5期低頻6碼，短線冷門補位</td></tr>
+              <tr><td class="num-col">D</td><td style="color:var(--accent)">6碼</td><td>3熱+3冷10</td><td style="color:var(--text2)">最近10期3熱+3冷，冷熱對半</td></tr>
+              <tr><td class="num-col">E</td><td style="color:var(--accent)">6碼</td><td>嚴格熱遺25</td><td style="color:var(--text2)">最近25期頻率80%+遺漏20%，嚴格和值區間</td></tr>
+              <tr><td class="num-col">F</td><td style="color:var(--accent)">6碼</td><td>冷號40</td><td style="color:var(--text2)">最近40期低頻6碼，中期冷門補位</td></tr>
+              <tr><td class="num-col">G</td><td style="color:var(--accent)">6碼</td><td>嚴格熱遺5</td><td style="color:var(--text2)">最近5期頻率60%+遺漏40%，嚴格和值區間</td></tr>
+              <tr><td class="num-col">H</td><td style="color:var(--accent)">6碼</td><td>尾數熱5</td><td style="color:var(--text2)">最近5期熱門尾數延伸</td></tr>
+              <tr><td class="num-col">I</td><td style="color:var(--accent)">6碼</td><td>前期共振5</td><td style="color:var(--text2)">前一期號碼的歷史共現關聯</td></tr>
+              <tr><td class="num-col">J</td><td style="color:var(--accent)">6碼</td><td>2熱+4冷8</td><td style="color:var(--text2)">最近8期2熱+4冷，短線反轉</td></tr>
+              <tr><td class="num-col">K</td><td style="color:var(--accent)">6碼</td><td>冷號8</td><td style="color:var(--text2)">最近8期低頻6碼</td></tr>
+              <tr><td class="num-col">L</td><td style="color:var(--accent)">6碼</td><td>純遺漏5</td><td style="color:var(--text2)">最近5期以遺漏值為主</td></tr>
             </tbody>
           </table>
           <div style="margin-top:16px; text-align:center">
@@ -1438,7 +1438,7 @@ function computeGapAnalysis(draws, last = 100) {
 // GENERATE SUGGESTION - 新版區間平衡策略
 // =============================================
 
-function generateSuggestions(freq, missing) {
+function generateSuggestions(freq, missing, sourceDraws = null) {
 
   // ── 基礎資料準備 ─────────────────────────────
   // 5個區間定義
@@ -1665,6 +1665,178 @@ function generateSuggestions(freq, missing) {
     return result.sort((a,b) => a-b);
   }
 
+  function frequencyWindow(last) {
+    if (!Array.isArray(sourceDraws) || sourceDraws.length === 0) return freq;
+    return computeFrequency(sourceDraws, Math.min(last, sourceDraws.length));
+  }
+
+  function scoreFrom(f, m, wf, wm) {
+    const mf = Math.max(...Object.values(f), 1);
+    const mm = Math.max(...Object.values(m), 1);
+    return Array.from({length:49}, (_,i) => {
+      const n = i + 1;
+      return { num:n, score:(f[n] || 0) / mf * wf + (m[n] || 0) / mm * wm, freq:f[n] || 0, miss:m[n] || 0 };
+    }).sort((a,b) => b.score - a.score || a.num - b.num);
+  }
+
+  function validateLoose(nums) {
+    if (nums.length !== 6) return false;
+    const sum = nums.reduce((a,b)=>a+b,0);
+    if (sum < 80 || sum > 220) return false;
+    const odds = nums.filter(n=>n%2!==0).length;
+    if (odds === 0 || odds === 6) return false;
+    const zones = new Set(nums.map(getZone));
+    if (zones.size < 3) return false;
+    return true;
+  }
+
+  function rankedPick(primary, fill, strict=false) {
+    const seen = new Set();
+    const candidates = [];
+    [...primary, ...fill].forEach(x => {
+      const n = x.num ?? x;
+      if (!seen.has(n)) { seen.add(n); candidates.push(n); }
+    });
+    for (let start = 0; start <= Math.min(16, candidates.length - 6); start++) {
+      const nums = candidates.slice(start, start + 6).sort((a,b)=>a-b);
+      if ((strict ? validate(nums) : validateLoose(nums))) return nums;
+    }
+    return candidates.slice(0, 6).sort((a,b)=>a-b);
+  }
+
+  function hotColdByWindow(last, hotCount, coldCount) {
+    const f = frequencyWindow(last);
+    const hot = Array.from({length:49}, (_,i)=>({num:i+1, freq:f[i+1] || 0}))
+      .sort((a,b)=>b.freq-a.freq || a.num-b.num);
+    const cold = Array.from({length:49}, (_,i)=>({num:i+1, freq:f[i+1] || 0}))
+      .sort((a,b)=>a.freq-b.freq || a.num-b.num);
+    const hotNums = hot.slice(0, hotCount);
+    const coldNums = cold.filter(x => !hotNums.some(h => h.num === x.num)).slice(0, coldCount);
+    return rankedPick([...hotNums, ...coldNums], hot);
+  }
+
+  function weightedWindow(last, wf, wm, strict=false) {
+    const f = frequencyWindow(last);
+    const arr = scoreFrom(f, missing, wf, wm);
+    return rankedPick(arr, arr, strict);
+  }
+
+  function coldWindow(last) {
+    const f = frequencyWindow(last);
+    const arr = Array.from({length:49}, (_,i)=>({num:i+1, freq:f[i+1] || 0}))
+      .sort((a,b)=>a.freq-b.freq || a.num-b.num);
+    return rankedPick(arr, arr);
+  }
+
+  function tailHotWindow(last) {
+    const recent = Array.isArray(sourceDraws) ? sourceDraws.slice(0, Math.min(last, sourceDraws.length)) : [];
+    const tailCount = Array(10).fill(0);
+    recent.forEach(d => d.numbers.forEach(n => tailCount[n % 10]++));
+    const arr = Array.from({length:49}, (_,i) => {
+      const n = i + 1;
+      return { num:n, score:tailCount[n % 10], tail:n % 10 };
+    }).sort((a,b)=>b.score-a.score || a.num-b.num);
+    return rankedPick(arr, arr);
+  }
+
+  function pairResonanceWindow(last) {
+    const recent = Array.isArray(sourceDraws) ? sourceDraws.slice(0, Math.min(40, sourceDraws.length)) : [];
+    const prev = Array.isArray(sourceDraws) && sourceDraws[0] ? sourceDraws[0].numbers : [];
+    const f = frequencyWindow(last);
+    const pair = new Map();
+    recent.forEach(d => {
+      const a = d.numbers;
+      for (let i=0; i<a.length; i++) {
+        for (let j=i+1; j<a.length; j++) {
+          const k = `${a[i]}-${a[j]}`;
+          pair.set(k, (pair.get(k) || 0) + 1);
+        }
+      }
+    });
+    const arr = Array.from({length:49}, (_,i) => {
+      const n = i + 1;
+      let pairScore = 0;
+      prev.forEach(p => {
+        const a = Math.min(p, n), b = Math.max(p, n);
+        if (a !== b) pairScore += pair.get(`${a}-${b}`) || 0;
+      });
+      return { num:n, score:pairScore * 0.25 + (f[n] || 0) * 0.3 + (missing[n] || 0) * 0.3 };
+    }).sort((a,b)=>b.score-a.score || a.num-b.num);
+    return rankedPick(arr, arr);
+  }
+
+  function zoneHotWindow(last) {
+    const f = frequencyWindow(last);
+    const arr = scoreFrom(f, missing, 1, 0);
+    const used = new Set();
+    const result = [];
+    for (const z of ZONES) {
+      const x = arr.find(v => v.num >= z.min && v.num <= z.max && !used.has(v.num));
+      if (x) { used.add(x.num); result.push(x.num); }
+    }
+    return rankedPick(result, arr);
+  }
+
+  function zoneMissingWindow(last, wf=0, wm=1) {
+    const f = frequencyWindow(last);
+    const arr = scoreFrom(f, missing, wf, wm);
+    const used = new Set();
+    const result = [];
+    for (const z of ZONES) {
+      const x = arr.find(v => v.num >= z.min && v.num <= z.max && !used.has(v.num));
+      if (x) { used.add(x.num); result.push(x.num); }
+    }
+    return rankedPick(result, arr);
+  }
+
+  function missingWindow(last) {
+    const f = frequencyWindow(last);
+    const arr = scoreFrom(f, missing, 0, 1);
+    return rankedPick(arr, arr);
+  }
+
+  function coOccurrenceWindow(last) {
+    const recent = Array.isArray(sourceDraws) ? sourceDraws.slice(0, Math.min(last, sourceDraws.length)) : [];
+    const f = frequencyWindow(last);
+    const pair = new Map();
+    recent.forEach(d => {
+      for (let i = 0; i < d.numbers.length; i++) {
+        for (let j = i + 1; j < d.numbers.length; j++) {
+          const key = `${d.numbers[i]}-${d.numbers[j]}`;
+          pair.set(key, (pair.get(key) || 0) + 1);
+        }
+      }
+    });
+
+    const connection = (a, b) => pair.get(`${Math.min(a,b)}-${Math.max(a,b)}`) || 0;
+    const selected = [];
+    while (selected.length < 6) {
+      const ranked = Array.from({length:49}, (_,i) => i + 1)
+        .filter(n => !selected.includes(n))
+        .map(n => ({
+          num:n,
+          score:(f[n] || 0) * 0.35
+            + selected.reduce((sum, picked) => sum + connection(n, picked), 0) * 1.5
+            + (missing[n] || 0) * 0.08
+        }))
+        .sort((a,b) => b.score - a.score || a.num - b.num);
+      selected.push(ranked[0].num);
+    }
+    return rankedPick(selected, scoreFrom(f, missing, 0.65, 0.35));
+  }
+
+  function carryColdWindow(last, carryCount=2) {
+    const f = frequencyWindow(last);
+    const previous = Array.isArray(sourceDraws) && sourceDraws[0] ? sourceDraws[0].numbers : [];
+    const carry = previous.map(n => ({num:n, freq:f[n] || 0}))
+      .sort((a,b) => b.freq - a.freq || a.num - b.num)
+      .slice(0, carryCount);
+    const cold = Array.from({length:49}, (_,i) => ({num:i+1, freq:f[i+1] || 0}))
+      .filter(x => !carry.some(c => c.num === x.num))
+      .sort((a,b) => a.freq - b.freq || (missing[b.num] || 0) - (missing[a.num] || 0) || a.num - b.num);
+    return rankedPick([...carry, ...cold.slice(0, 6 - carry.length)], cold);
+  }
+
   // A 遺漏加權①：遺漏70%+頻率30%（回測表現最穩定）
   const A = tryGenerate(() => noisyTop(scoreArr2, 6, 0.3));
   sets.push({label:'A', type:6, strategy:'遺漏加權①', desc:'遺漏70%+頻率30%，回測最穩定', nums:A, special:pickSpecial(A)});
@@ -1764,7 +1936,22 @@ function generateSuggestions(freq, missing) {
   const Lnums = noisyScore(scoreArr, 7, 0.2);
   sets.push({label:'L', type:7, strategy:'7碼綜合評分', desc:'頻率+遺漏評分最高7碼', nums:Lnums, special:pickSpecial(Lnums)});
 
-  return sets;
+  const optimized6 = [
+    {label:'A', strategy:'區間熱15',    desc:'最近15期各區熱號，保留區間覆蓋', nums:zoneHotWindow(15)},
+    {label:'B', strategy:'前期共振40',  desc:'以上期號碼搜尋最近40期共現關聯', nums:pairResonanceWindow(40)},
+    {label:'C', strategy:'極短冷號5',   desc:'最近5期低頻6碼，短線冷門補位', nums:coldWindow(5)},
+    {label:'D', strategy:'2熱+4冷12',   desc:'最近12期2個熱號搭配4個冷號', nums:hotColdByWindow(12, 2, 4)},
+    {label:'E', strategy:'共現組合15',  desc:'最近15期高共現關聯號碼', nums:coOccurrenceWindow(15)},
+    {label:'F', strategy:'冷號40',      desc:'最近40期低頻6碼，中期冷門補位', nums:coldWindow(40)},
+    {label:'G', strategy:'嚴格熱遺5',   desc:'最近5期頻率60%+遺漏40%，嚴格和值區間', nums:weightedWindow(5, 0.6, 0.4, true)},
+    {label:'H', strategy:'尾數熱5',     desc:'最近5期熱門尾數延伸', nums:tailHotWindow(5)},
+    {label:'I', strategy:'共現組合20',  desc:'最近20期高共現關聯號碼', nums:coOccurrenceWindow(20)},
+    {label:'J', strategy:'延續2+冷10',  desc:'保留上期2碼，搭配最近10期冷號', nums:carryColdWindow(10, 2)},
+    {label:'K', strategy:'冷號8',       desc:'最近8期低頻6碼', nums:coldWindow(8)},
+    {label:'L', strategy:'5熱+1冷30',   desc:'最近30期5個熱號搭配1個冷號', nums:hotColdByWindow(30, 5, 1)},
+  ].map(s => ({...s, type:6, special:pickSpecial(s.nums)}));
+
+  return optimized6;
 }
 
 // =============================================
@@ -2257,7 +2444,7 @@ let currentSuggestions = null;
 
 function renderSuggestions(freq, missing) {
   currentSuggestions = { freq, missing };
-  const sets = generateSuggestions(freq, missing);
+  const sets = generateSuggestions(freq, missing, allDraws);
 
   const six  = sets.filter(s => s.type === 6);
   const seven = sets.filter(s => s.type === 7);
@@ -2308,17 +2495,17 @@ function renderSuggestions(freq, missing) {
     <div style="margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:8px">
         <span style="background:var(--accent);color:white;font-size:10px;padding:2px 8px;border-radius:10px">6碼</span>
-        共 10 組（每組1注，每注50元）
+        共 ${six.length} 組（每組1注，每注50元）
       </div>
       ${sixHTML}
     </div>
-    <div>
+    ${seven.length ? `<div>
       <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:8px">
         <span style="background:var(--gold);color:#1a0d00;font-size:10px;padding:2px 8px;border-radius:10px">7碼</span>
-        共 2 組（7碼包牌 = 7注，每組350元）
+        共 ${seven.length} 組（7碼包牌 = 7注，每組350元）
       </div>
       ${sevenHTML}
-    </div>
+    </div>` : ''}
   `;
 }
 
@@ -2567,8 +2754,11 @@ function init() {
   setTimeout(() => {
     loadDrawsFromSheet().then(({ draws, fromSheet }) => {
       if (fromSheet && draws.length > 0) {
-        const { draws: merged, added } = mergeDraws(allDraws, draws);
-        allDraws = merged;
+        const previousNewest = allDraws[0]?.period;
+        allDraws = [...draws].sort((a,b) =>
+          Number(b.period.replace(/\D/g,'')) - Number(a.period.replace(/\D/g,''))
+        );
+        const added = allDraws[0]?.period !== previousNewest ? 1 : 0;
         try { renderAll(); } catch(e) { console.error('renderAll 更新錯誤:', e); }
         document.getElementById('statusDot').style.background = '#10b981';
         const ld = allDraws[allDraws.length-1];
@@ -2577,7 +2767,7 @@ function init() {
         if (added > 0) showToast(`🎉 已更新！新增 ${added} 期最新資料`, 'success');
         const newest = allDraws[0], oldest = allDraws[allDraws.length-1];
         document.getElementById('dataAlert').textContent =
-          `⚠️ 資料來源：Google Sheet（${oldest.period}～${newest.period}，${oldest.date}～${newest.date}），即時同步。統計僅供參考，彩票屬機率事件，請理性購買。`;
+          `⚠️ 資料來源：Google Sheet（${oldest.period}～${newest.period}，${oldest.date}～${newest.date}，共${allDraws.length}期），即時同步。統計僅供參考，彩票屬機率事件，請理性購買。`;
       } else {
         document.getElementById('statusDot').style.background = '#f59e0b';
         document.getElementById('statusText').textContent =
@@ -2597,6 +2787,7 @@ function renderAll() {
   const streaks = computeStreaks(allDraws);
   const zones   = computeGapAnalysis(allDraws);
 
+  updateDataLabels(allDraws);
   renderLatestDraw(allDraws[0]);
   renderDrawStats(allDraws[0], allDraws);
   renderFrequency(freq);
@@ -2608,6 +2799,25 @@ function renderAll() {
   renderHeadTail(allDraws);
   renderSuggestions(freq, missing);
   renderHistory();
+}
+
+function updateDataLabels(draws) {
+  if (!Array.isArray(draws) || draws.length === 0) return;
+  const newest = draws[0];
+  const oldest = draws[draws.length - 1];
+  const countText = `2026年全${draws.length}期真實資料`;
+  const missingText = `距上次出現期數（全${draws.length}期）`;
+
+  const freqBadge = document.getElementById('freqPeriodBadge');
+  const missingBadge = document.getElementById('missingPeriodBadge');
+  const dataAlert = document.getElementById('dataAlert');
+
+  if (freqBadge) freqBadge.textContent = countText;
+  if (missingBadge) missingBadge.textContent = missingText;
+  if (dataAlert) {
+    dataAlert.textContent =
+      `⚠️ 資料來源：Google Sheet / 備用資料（${oldest.period}～${newest.period}，${oldest.date}～${newest.date}，共${draws.length}期），統計僅供參考，彩票屬機率事件，請理性購買。`;
+  }
 }
 
 // =============================================
@@ -2632,7 +2842,7 @@ function backtestOnePeriod(historyDraws, actualDraw, runs) {
   labels.forEach(l => { hitSums[l]=0; hitSpecial[l]=0; hitDist[l]={0:0,1:0,2:0,3:0,4:0,5:0,6:0}; });
 
   for (let r = 0; r < runs; r++) {
-    const sets = generateSuggestions(freq, missing);
+    const sets = generateSuggestions(freq, missing, historyDraws);
     for (const s of sets) {
       const hits = countHits(s.nums, actualDraw.numbers);
       hitSums[s.label]    += hits;
@@ -2750,7 +2960,16 @@ async function runBacktest() {
 
 function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows, totalPeriods, runs) {
   // ── 總覽卡片 ────────────────────────────────
-  const sorted = [...labels].sort((a,b) => avgHit[b] - avgHit[a]);
+  const hitRate = (label, from) => {
+    let total = 0;
+    for (let hits = from; hits <= 6; hits++) total += totalDist[label][hits] || 0;
+    return total / (totalPeriods * runs);
+  };
+  const sorted = [...labels].sort((a,b) =>
+    hitRate(b, 4) - hitRate(a, 4)
+    || hitRate(b, 3) - hitRate(a, 3)
+    || avgHit[b] - avgHit[a]
+  );
   const best   = sorted[0];
   const worst  = sorted[sorted.length-1];
 
@@ -2786,9 +3005,9 @@ function renderBacktestResult(labels, avgHit, avgSpecial, totalDist, periodRows,
 
   // ── 策略排行表 ────────────────────────────────
   const strategyNames = {
-    A:'遺漏加權①', B:'冷門逆轉①', C:'2熱+4冷①', D:'遺漏Top6', E:'遺漏3+熱3',
-    F:'5區均衡-遺漏', G:'遺漏加權②', H:'2熱+4冷②', I:'冷門逆轉②', J:'2熱+4冷③',
-    K:'7碼區間包牌', L:'7碼綜合評分'
+    A:'區間熱15', B:'前期共振40', C:'極短冷號5', D:'2熱+4冷12', E:'共現組合15',
+    F:'冷號40', G:'嚴格熱遺5', H:'尾數熱5', I:'共現組合20', J:'延續2+冷10',
+    K:'冷號8', L:'5熱+1冷30'
   };
 
   const maxAvg = Math.max(...labels.map(l => avgHit[l]));
